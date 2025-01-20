@@ -16,6 +16,7 @@
     - Filters:
         - location by zip code and mile range 
         - scheduled or flexible
+        - one-time, recurring
         - category/cause
         - skills
 - Front-end
