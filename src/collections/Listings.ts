@@ -1,7 +1,7 @@
 import { CollectionConfig } from "payload";
 
-export const VolunteerOpportunities: CollectionConfig = {
-  slug: "volunteer-opportunities",
+export const Listings: CollectionConfig = {
+  slug: "listings",
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "organization", "isRemote", "updatedAt"],
