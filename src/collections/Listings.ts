@@ -31,14 +31,23 @@ export const Listings: CollectionConfig = {
       label: "Opportunity Title",
     },
     {
-        name: "location type",
-        required: true,
-        type: "select",
-        options: [
-            "Remote",
-            "In-person",
-            "Hybrid",
-            "Lifestyle",
+        type: "row",
+        fields: [
+            {
+                name: "location type",
+                required: true,
+                type: "select",
+                options: [
+                    "Remote",
+                    "In-person",
+                    "Hybrid",
+                    "Lifestyle",
+                ],
+            },
+            {
+                name: "zip code",
+                type: "number"
+            },
         ],
     },
     {
