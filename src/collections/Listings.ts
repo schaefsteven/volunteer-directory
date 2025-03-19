@@ -59,39 +59,61 @@ export const Listings: CollectionConfig = {
     {
         name: "schedule",
         type: "group",
+        admin: {
+            condition: (data) => {
+                return data.location.type !== "Lifestyle"
+            },
+        },
         fields: [
             {
                 name: "type",
                 required: true,
                 type: "radio",
                 options: [
-                    "One-time",
-                    "Recurring",
+                    "Weekly",
+                    "Specific Date(s)",
+                    "Any Time",
                 ],
             },
             {
-                name: "flexible",
-                type: "checkbox",
+                name: "availability",
+                label: "",
+                type: "array",
+                minRows: 1,
+                labels: {
+                    singular: "Time Block",
+                    plural: "Time Blocks",
+                },
+                fields: [
+                    {
+                        type: "number",
+                        name: "start",
+                        min: 0,
+                        max: 169,
+                    },
+                    {
+                        type: "number",
+                        name: "end",
+                        min: 0,
+                        max: 169,
+                    },
+                ],
+                admin: {
+                    condition: (data, sibilingData) => {
+                        return sibilingData.type === "Weekly"
+                    },
+                },
             },
-            // need additional options here for weekdays, specific dates, etc
-        ],
-    },
-    {
-        type: "row",
-        fields: [
             {
-                name: "minHours",
-                label: "Minimum hours per week",
+                name: "minTimeBlock",
+                label: "Minimum Time Block",
                 type: "number",
-                min: "0",
-                max: "168",
-            },
-            {
-                name: "maxHours",
-                label: "Maximum hours per week",
-                type: "number",
-                min: "0",
-                max: "168",
+                max: 168,
+                admin: {
+                    condition: (data, sibilingData) => {
+                        return sibilingData.type === "Weekly"
+                    },
+                },
             },
         ],
     },
