@@ -28,7 +28,6 @@ export const Listings: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
-      label: "Opportunity Title",
     },
     {
         type: "row",
@@ -76,6 +75,17 @@ export const Listings: CollectionConfig = {
     {
         name: "first step",
         type: "richText",
+    },
+    {
+        name: "skills",
+        type: "select",
+        hasMany: true,
+        options: [
+            "software developer",
+            "manual labor",
+            "carpentry",
+            "food service",
+        ],
     },
     {
         name: "tags",
