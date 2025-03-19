@@ -30,37 +30,64 @@ export const Listings: CollectionConfig = {
       required: true,
     },
     {
-        type: "row",
+        type: "group",
+        name: "location",
         fields: [
             {
-                name: "location type",
+                name: "type",
                 required: true,
-                type: "select",
+                type: "radio",
                 options: [
-                    "Remote",
                     "In-person",
                     "Hybrid",
+                    "Remote",
                     "Lifestyle",
                 ],
             },
             {
-                name: "zip code",
-                type: "number"
+                name: "zipCode",
+                type: "number",
+                required: true,
+                admin: {
+                    condition: (data, sibilingData) => {
+                        return ["In-person", "Hybrid"].includes(sibilingData.type)
+                    },
+                },
             },
+        ],
+    },
+    {
+        name: "schedule",
+        type: "group",
+        fields: [
+            {
+                name: "type",
+                required: true,
+                type: "radio",
+                options: [
+                    "One-time",
+                    "Recurring",
+                ],
+            },
+            {
+                name: "flexible",
+                type: "checkbox",
+            },
+            // need additional options here for weekdays, specific dates, etc
         ],
     },
     {
         type: "row",
         fields: [
             {
-                name: "min hours",
+                name: "minHours",
                 label: "Minimum hours per week",
                 type: "number",
                 min: "0",
                 max: "168",
             },
             {
-                name: "max hours",
+                name: "maxHours",
                 label: "Maximum hours per week",
                 type: "number",
                 min: "0",
@@ -73,7 +100,7 @@ export const Listings: CollectionConfig = {
         type: "richText",
     },
     {
-        name: "first step",
+        name: "firstStep",
         type: "richText",
     },
     {
