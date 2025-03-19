@@ -6,7 +6,7 @@ import OpportunityCard from "@/components/OpportunityCard";
 import FilterSidebar from "@/components/FilterSidebar";
 import Pagination from "@/components/Pagination";
 import SortSelector from "@/components/SortSelector";
-import SearchBar from "@/components/Searchbar";
+import SearchBar from "@/components/SearchBar";
 import { getDummyOpportunities, Opportunity } from "@/lib/dummyData";
 
 // Define interface for filter state
@@ -37,6 +37,9 @@ export default function OpportunitiesPage() {
     categories: [],
     skills: [],
   });
+
+  // Add to your existing state in the component
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // State for sorting
   const [sortOption, setSortOption] = useState("newest");
@@ -190,26 +193,91 @@ export default function OpportunitiesPage() {
     setSearchQuery(query);
   };
 
+  // src/app/(app)/opportunities/page.tsx
+  // Update the return section
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-8">
         Volunteer Opportunities
       </h1>
 
+      {/* Mobile filter toggle */}
+      <div className="md:hidden mb-4">
+        <button
+          onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+        >
+          <span>Filters</span>
+          <svg
+            className="ml-2 h-5 w-5 text-gray-400"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile filter panel */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 flex z-40 md:hidden">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-25"
+            onClick={() => setMobileFiltersOpen(false)}
+          ></div>
+          <div className="relative max-w-xs w-full bg-white shadow-xl pb-12 flex flex-col">
+            <div className="px-4 py-5 flex items-center justify-between">
+              <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+              <button
+                type="button"
+                className="-mr-2 w-10 h-10 bg-white p-2 rounded-md flex items-center justify-center text-gray-400"
+                onClick={() => setMobileFiltersOpen(false)}
+              >
+                <span className="sr-only">Close menu</span>
+                <svg
+                  className="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="px-4 overflow-y-auto">
+              <FilterSidebar onFilterChange={handleFilterChange} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row gap-8">
-        <div className="md:w-1/4">
+        {/* Desktop filters */}
+        <div className="hidden md:block md:w-1/4">
           <FilterSidebar onFilterChange={handleFilterChange} />
         </div>
 
         <div className="md:w-3/4">
           <SearchBar onSearch={handleSearch} initialQuery={searchQuery} />
 
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <SortSelector
               onSortChange={handleSortChange}
               currentSort={sortOption}
             />
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 mt-2 sm:mt-0">
               Showing {filteredOpportunities.length} opportunities
             </p>
           </div>
