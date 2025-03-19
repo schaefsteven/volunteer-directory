@@ -24,18 +24,21 @@ interface OpportunityCardProps {
 }
 
 export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
+  // components/OpportunityCard.tsx
+  // Update the return section
+
   return (
     <Link href={`/opportunities/${opportunity.id}`}>
       <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden">
-        <div className="p-6">
-          <div className="flex justify-between items-start">
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
                 {opportunity.title}
               </h3>
               <p className="text-gray-600">{opportunity.organization}</p>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap mt-2 sm:mt-0 gap-2">
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   opportunity.isRemote
