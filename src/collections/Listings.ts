@@ -32,11 +32,14 @@ export const Listings: CollectionConfig = {
     {
         type: "group",
         name: "location",
+        //Need to adapt for listings that can be multiple location types
+        //What about in-person but "from anywhere" opportunities? bool that disables zip?
         fields: [
             {
                 name: "type",
                 required: true,
-                type: "radio",
+                hasMany: true,
+                type: "select",
                 options: [
                     "In-person",
                     "Hybrid",
@@ -45,12 +48,20 @@ export const Listings: CollectionConfig = {
                 ],
             },
             {
-                name: "zipCode",
-                type: "number",
-                required: true,
+                name: "anywhere",
+                type: "checkbox",
                 admin: {
                     condition: (data, sibilingData) => {
-                        return ["In-person", "Hybrid"].includes(sibilingData.type)
+                        return sibilingData.type.some( (el) => ["In-person", "Hybrid"].includes(el) )
+                    },
+                },
+            },
+            {
+                name: "zipCode",
+                type: "number",
+                admin: {
+                    condition: (data, sibilingData) => {
+                        return sibilingData.type.some( (el) => ["In-person", "Hybrid"].includes(el) && !sibilingData.anywhere )
                     },
                 },
             },
@@ -77,7 +88,7 @@ export const Listings: CollectionConfig = {
             },
             {
                 name: "availability",
-                label: "",
+                //label: "",
                 type: "array",
                 minRows: 1,
                 labels: {
