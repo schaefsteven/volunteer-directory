@@ -24,6 +24,15 @@ export const Listings: CollectionConfig = {
     },
   },
   fields: [
+      {
+          name: "test",
+          type: "text",
+          admin: { 
+              components: {
+                  Field: '/components/Test#SimpleRangeSlider',
+              },
+          },
+      },
     {
       name: "title",
       type: "text",
