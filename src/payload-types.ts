@@ -143,14 +143,7 @@ export interface Listing {
   };
   schedule?: {
     type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
-    availability?:
-      | {
-          start?: number | null;
-          end?: number | null;
-          id?: string | null;
-        }[]
-      | null;
-    minTimeBlock?: number | null;
+    test?: string | null;
   };
   description?: {
     root: {
@@ -276,14 +269,7 @@ export interface ListingsSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
-        availability?:
-          | T
-          | {
-              start?: T;
-              end?: T;
-              id?: T;
-            };
-        minTimeBlock?: T;
+        test?: T;
       };
   description?: T;
   firstStep?: T;

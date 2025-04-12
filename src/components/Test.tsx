@@ -62,7 +62,16 @@ SimpleRangeSlider.propTypes = {
 }
 
 export const AvailabilitySelector = () => {
-  return <span>Hello World</span>
+  return (
+    <>
+      <div>
+        <label>SUN</label>
+        <div role="button">
+          +
+        </div>
+      </div>
+    </>
+  )
 }
 
 export default TestComponent

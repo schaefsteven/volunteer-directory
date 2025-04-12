@@ -24,15 +24,6 @@ export const Listings: CollectionConfig = {
     },
   },
   fields: [
-      {
-          name: "test",
-          type: "text",
-          admin: { 
-              components: {
-                  Field: '/components/Test#AvailabilitySelector',
-              },
-          },
-      },
     {
       name: "title",
       type: "text",
@@ -96,42 +87,11 @@ export const Listings: CollectionConfig = {
                 ],
             },
             {
-                name: "availability",
-                //label: "",
-                type: "array",
-                minRows: 1,
-                labels: {
-                    singular: "Time Block",
-                    plural: "Time Blocks",
-                },
-                fields: [
-                    {
-                        type: "number",
-                        name: "start",
-                        min: 0,
-                        max: 169,
-                    },
-                    {
-                        type: "number",
-                        name: "end",
-                        min: 0,
-                        max: 169,
-                    },
-                ],
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type === "Weekly"
-                    },
-                },
-            },
-            {
-                name: "minTimeBlock",
-                label: "Minimum Time Block",
-                type: "number",
-                max: 168,
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type === "Weekly"
+                name: "test",
+                type: "text",
+                admin: { 
+                    components: {
+                        Field: '/components/Test#AvailabilitySelector',
                     },
                 },
             },
