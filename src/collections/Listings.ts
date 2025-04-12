@@ -29,7 +29,7 @@ export const Listings: CollectionConfig = {
           type: "text",
           admin: { 
               components: {
-                  Field: '/components/Test#SimpleRangeSlider',
+                  Field: '/components/Test#AvailabilitySelector',
               },
           },
       },

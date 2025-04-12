@@ -7,7 +7,7 @@ import { buildConfig } from "payload";
 import { fileURLToPath } from "url";
 import sharp from "sharp";
 
-import { Users } from "./collections/Users";
+import { Users } from "./collections/Users.js";
 import { Listings } from "./collections/Listings"; 
 
 const filename = fileURLToPath(import.meta.url);
