@@ -77,3 +77,20 @@
   position: relative;
 }
 
+.avsel_row {
+  display: flex;
+  flex-direction: row;
+  border-top: 2px solid;
+  padding-top: 1rem;
+}
+
+.avsel_row label {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+.avsel_add_button {
+  width: 2rem;
+  height: 100%;
+  font-size: 2rem;
+}

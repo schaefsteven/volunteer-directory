@@ -64,9 +64,9 @@ SimpleRangeSlider.propTypes = {
 export const AvailabilitySelector = () => {
   return (
     <>
-      <div>
+      <div className={cn(styles.avsel_row)}>
         <label>SUN</label>
-        <div role="button">
+        <div role="button" className={cn(styles.avsel_add_button)}>
           +
         </div>
       </div>
