@@ -87,10 +87,19 @@
 .avsel_row label {
   writing-mode: vertical-rl;
   text-orientation: upright;
+  text-transform: uppercase;
 }
 
 .avsel_add_button {
   width: 2rem;
   height: 100%;
   font-size: 2rem;
+}
+
+.avsel_time_block {
+  padding: .5rem;
+  background: white;
+  border: 2px black;
+  border-radius: .5rem;
+  color: black;
 }
