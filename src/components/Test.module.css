@@ -82,6 +82,7 @@
   flex-direction: row;
   border-top: 2px solid;
   padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .avsel_row label {
@@ -102,4 +103,8 @@
   border: 2px black;
   border-radius: .5rem;
   color: black;
+  display: flex;
+  flex-direction: row;
+  gap: .5rem;
+  height: min-content;
 }
