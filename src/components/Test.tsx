@@ -63,23 +63,39 @@ SimpleRangeSlider.propTypes = {
 
 export const AvailabilitySelector = () => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+  const [availability, setAvailability] = useState([])
+
+  const addTimeBlock = () => {
+    setAvailability(prev => [...prev, [10, 40]])
+  }
   return (
     <>
+      <span>{availability}</span>
       {labels.map((label) => (
         <div key={label} className={cn(styles.avsel_row)}>
           <label>{label}</label>
-          <div role="button" className={cn(styles.avsel_add_button)}>
+          <div 
+            role="button" 
+            className={cn(styles.avsel_add_button)}
+            onClick={() => addTimeBlock()}
+          >
             +
           </div>
-          <div className={cn(styles.avsel_time_block)}>
-            <span>9:00am</span>
-            <span>-</span>
-            <span>6:00pm</span>
-            <div role="button">edit</div>
-          </div>
+          <TimeBlock/>
         </div>
       ))}
     </>
+  )
+}
+
+const TimeBlock = () => {
+  return (
+    <div className={cn(styles.avsel_time_block)}>
+      <span>9:00am</span>
+      <span>-</span>
+      <span>6:00pm</span>
+      <div role="button">edit</div>
+    </div>
   )
 }
 
