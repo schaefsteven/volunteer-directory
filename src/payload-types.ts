@@ -143,7 +143,15 @@ export interface Listing {
   };
   schedule?: {
     type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
-    test?: string | null;
+    availability?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   description?: {
     root: {
@@ -269,7 +277,7 @@ export interface ListingsSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
-        test?: T;
+        availability?: T;
       };
   description?: T;
   firstStep?: T;

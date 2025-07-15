@@ -61,31 +61,34 @@ SimpleRangeSlider.propTypes = {
     onChange: PropTypes.func.isRequired,
 }
 
-export const AvailabilitySelector = () => {
-  const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-  const [availability, setAvailability] = useState([])
+export const AvailabilitySelector = ({ path, field: { fields } }) => {
+    const { value, setValue, rows } = useField({ path, hasRows: true })
+    const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+    const [availability, setAvailability] = useState([])
 
-  const addTimeBlock = () => {
-    setAvailability(prev => [...prev, [10, 40]])
-  }
-  return (
-    <>
-      <span>{availability}</span>
-      {labels.map((label) => (
-        <div key={label} className={cn(styles.avsel_row)}>
-          <label>{label}</label>
-          <div 
-            role="button" 
-            className={cn(styles.avsel_add_button)}
-            onClick={() => addTimeBlock()}
-          >
-            +
+    const addTimeBlock = () => {
+      setAvailability(prev => [...prev, [10, 40]])
+    }
+    console.log(rows)
+    console.log("fields:", fields)
+    return (
+      <>
+        <span>{availability}</span>
+        {labels.map((label) => (
+          <div key={label} className={cn(styles.avsel_row)}>
+            <label>{label}</label>
+            <div 
+              role="button" 
+              className={cn(styles.avsel_add_button)}
+              onClick={() => addTimeBlock()}
+            >
+              +
+            </div>
+            <TimeBlock/>
           </div>
-          <TimeBlock/>
-        </div>
-      ))}
-    </>
-  )
+        ))}
+      </>
+    )
 }
 
 const TimeBlock = () => {
