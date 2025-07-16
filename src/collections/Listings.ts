@@ -91,7 +91,7 @@ export const Listings: CollectionConfig = {
                 type: "json",
                 admin: { 
                     components: {
-                        Field: '/components/AvailDisp',
+                        Field: '/components/AvailabilitySelector',
                     },
                 },
             },
