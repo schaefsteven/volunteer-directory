@@ -1,4 +1,4 @@
-'use client'
+'use client' 
 import React from 'react'
 import { useState, useRef } from 'react'
 import { useField } from '@payloadcms/ui'
@@ -14,17 +14,15 @@ import cn from 'classnames'
 
 export const AvailabilitySelector = ({ path }) => {
   const { value, setValue } = useField({ path })
+  const [dbAvailability, setDbAvailability] = useState(value)
+  const [showModal, setShowModal] = useState(false)
 
-  const [availability, setAvailability] = useState(value)
+  let availability = Array(7).fill().map(() => [])
 
-  let timeBlocks = [[], [], [], [], [], [], []] 
-
-  for (let block of availability) {
+  for (let block of dbAvailability) {
     let row = Math.floor(block.start / 24)
-    timeBlocks[row].push([block.start % 24, block.end % 24])
+    availability[row].push([block.start % 24, block.end % 24])
   }
-
-  console.log(timeBlocks)
 
   let rows = []
 
@@ -43,7 +41,7 @@ export const AvailabilitySelector = ({ path }) => {
         >
           +
         </div>
-        {timeBlocks[row].map(
+        {availability[row].map(
           ([start, end]) => {
             return (
               TimeBlock(start, end)
@@ -63,8 +61,19 @@ export const AvailabilitySelector = ({ path }) => {
         <span>{start}</span>
         <span>-</span>
         <span>{end}</span>
-        <div role="button">edit</div>
+        <div 
+          role="button"
+          onClick={() => {setShowModal(!showModal); console.log(showModal)}}
+        >
+          edit
+        </div>
       </div>
+    )
+  }
+
+  const EditModal = () => {
+    return (
+      <p>EDIT MODAL</p>
     )
   }
 
@@ -77,6 +86,7 @@ export const AvailabilitySelector = ({ path }) => {
   return (
     <div>
       {rows}
+      {showModal && <EditModal/>}
     </div>
   )
 }
