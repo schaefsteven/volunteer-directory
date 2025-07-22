@@ -24,9 +24,9 @@ export const AvailabilitySelector = ({ path }) => {
     availability[row].push([block.start % 24, block.end % 24])
   }
 
-  let rows = []
-
-  const addTimeBlock = () => {
+  const handleAddTimeBlock = (row) => {
+    console.log('add time block to: ', row)
+    availability[row].push([8, 16])
   }
 
   const Row = (row) => {
@@ -37,7 +37,7 @@ export const AvailabilitySelector = ({ path }) => {
         <div 
           role="button" 
           className={cn(styles.avsel_add_button)}
-          onClick={() => addTimeBlock()}
+          onClick={() => handleAddTimeBlock(row)}
         >
           +
         </div>
@@ -53,14 +53,23 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const TimeBlock = (start, end) => {
+    const timeFormat = (num) => {
+      if (num < 12) {
+        return num + 'am'
+      } else if (num != 24) {
+        return num - 12 + 'pm'
+      } else {
+        return num - 12 + 'am'
+      }
+    }
     return (
       <div 
         className={cn(styles.avsel_time_block)}
         key={start}
       >
-        <span>{start}</span>
+        <span>{timeFormat(start)}</span>
         <span>-</span>
-        <span>{end}</span>
+        <span>{timeFormat(end)}</span>
         <div 
           role="button"
           onClick={() => {setShowModal(!showModal); console.log(showModal)}}
@@ -76,6 +85,8 @@ export const AvailabilitySelector = ({ path }) => {
       <p>EDIT MODAL</p>
     )
   }
+
+  let rows = []
 
   {for (let i = 0; i < 7; i++) {
     rows.push(

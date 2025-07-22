@@ -98,13 +98,14 @@
 }
 
 .avsel_time_block {
-  padding: .5rem;
   background: white;
-  border: 2px black;
   border-radius: .5rem;
+  border: 2px black;
   color: black;
   display: flex;
   flex-direction: row;
-  gap: .5rem;
+  gap: 0.5rem;
   height: min-content;
+  margin-right: 0.5rem;
+  padding: 0.5rem;
 }
