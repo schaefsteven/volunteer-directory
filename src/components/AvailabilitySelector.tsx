@@ -6,11 +6,9 @@ import styles from './Test.module.css'
 import cn from 'classnames'
 
 //todo:
-//let's store availability in the database as: [{start:1, end:2}, ...]
-//The component needs to initialize by converting this into a format that it can use easier
-//on save, we will convert back to the storage format. 
-//component format will be a dict with numbered keys for rows and arrays of time blocks. 
-//split the rows into their own component, and when we edit, we will replace the row's object so it udpates (and sorts)
+//re-write as separate components
+//store state in parent component availability
+//replace availability when editing to re-render
 
 export const AvailabilitySelector = ({ path }) => {
   const { value, setValue } = useField({ path })
@@ -24,12 +22,13 @@ export const AvailabilitySelector = ({ path }) => {
     availability[row].push([block.start % 24, block.end % 24])
   }
 
-  const handleAddTimeBlock = (row) => {
-    console.log('add time block to: ', row)
-    availability[row].push([8, 16])
-  }
-
   const Row = (row) => {
+    const [timeBlocks, setTimeBlocks] = useState(availability[row])
+    const handleAddTimeBlock = () => {
+      availability[row].push([8, 16])
+      setTimeBlocks(prevTimeBlocks => [ ...prevTimeBlocks, [8, 16]])
+      console.log(availability[row])
+    }
     const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
     return (
       <div key={row} className={cn(styles.avsel_row)}>
@@ -37,11 +36,11 @@ export const AvailabilitySelector = ({ path }) => {
         <div 
           role="button" 
           className={cn(styles.avsel_add_button)}
-          onClick={() => handleAddTimeBlock(row)}
+          onClick={() => handleAddTimeBlock()}
         >
           +
         </div>
-        {availability[row].map(
+        {timeBlocks.map(
           ([start, end]) => {
             return (
               TimeBlock(start, end)
@@ -72,7 +71,7 @@ export const AvailabilitySelector = ({ path }) => {
         <span>{timeFormat(end)}</span>
         <div 
           role="button"
-          onClick={() => {setShowModal(!showModal); console.log(showModal)}}
+          onClick={() => {setShowModal(!showModal)}}
         >
           edit
         </div>
