@@ -6,45 +6,63 @@ import styles from './Test.module.css'
 import cn from 'classnames'
 
 //todo:
-//re-write as separate components
-//store state in parent component availability
-//replace availability when editing to re-render
 
 export const AvailabilitySelector = ({ path }) => {
-  const { value, setValue } = useField({ path })
-  const [dbAvailability, setDbAvailability] = useState(value)
+  const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
 
-  const [availability, setAvailability] = useState(() => {
+  //const [availability, setAvailability] = useState(() => {
+    //const array = Array(7).fill().map(() => [])
+    //for (let block of value || []) {
+      //let row = Math.floor(block.start/24)
+      //array[row].push([block.start % 24, block.end % 24])
+    //}
+    //return array
+  //})
+
+  const hourOfWeek = (hour, day) => {
+    return hour + (day * 24)
+  }
+  
+  const dbFormat = (uiAvail) => {
+    // converts the availability array into the format stored in the database
+    let dbAvail = []
+    for (let day of uiAvail) {
+      for (let block of day) {
+        dbAvail.push({
+          "start": hourOfWeek(block[1]),
+          "end": hourOfWeek(block[2])
+        })
+      }
+    }
+    return dbAvail
+  }
+
+  const uiFormat = (dbAvail) => {
+    // converts the availability array into the format used by the ui
     const array = Array(7).fill().map(() => [])
-    for (let block of value || []) {
+    for (let block of dbAvail || []) {
       let row = Math.floor(block.start/24)
       array[row].push([block.start % 24, block.end % 24])
     }
     return array
-  })
+  }
 
   const handleEditTimeBlock = () => {
     setShowModal((showModal) => !showModal)
   }
 
   const handleAddTimeBlock = (rowIndex) => {
-    //availability[row].push([8, 16])
-    //setTimeBlocks(prevTimeBlocks => [ ...prevTimeBlocks, [8, 16]])
-    console.log("add time block to row " + rowIndex)
-    setAvailability((oldAvail) => {
-      const newAvail = [...oldAvail]
-      newAvail[rowIndex] = [
-        ...newAvail[rowIndex], 
-        [8, 16]
-      ]
-      return newAvail
-    })
+    const newBlock = { 
+      start: hourOfWeek(8, rowIndex), 
+      end: hourOfWeek(12, rowIndex)
+    }
+    setValue([...(value || []), newBlock])
   }
 
   return (
     <div>
-      {availability.map((timeBlocks, rowIndex) => (
+      {uiFormat(value).map((timeBlocks, rowIndex) => (
         <Row
           key={rowIndex}
           rowIndex={rowIndex}
@@ -91,6 +109,8 @@ const TimeBlock = ({start, end, handleEditTimeBlock}) => {
   const timeFormat = (num) => {
     if (num < 12) {
       return num + 'am'
+    } else if (num == 12) {
+      return num + 'pm'
     } else if (num != 24) {
       return num - 12 + 'pm'
     } else {
