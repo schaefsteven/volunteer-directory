@@ -11,14 +11,8 @@ export const AvailabilitySelector = ({ path }) => {
   const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
 
-  //const [availability, setAvailability] = useState(() => {
-    //const array = Array(7).fill().map(() => [])
-    //for (let block of value || []) {
-      //let row = Math.floor(block.start/24)
-      //array[row].push([block.start % 24, block.end % 24])
-    //}
-    //return array
-  //})
+  const lastId = useRef(0);
+  const generateId = () => ++lastId.current
 
   const hourOfWeek = (hour, day) => {
     return hour + (day * 24)
@@ -30,20 +24,30 @@ export const AvailabilitySelector = ({ path }) => {
     for (let day of uiAvail) {
       for (let block of day) {
         dbAvail.push({
-          "start": hourOfWeek(block[1]),
-          "end": hourOfWeek(block[2])
+          "start": hourOfWeek(block.start),
+          "end": hourOfWeek(block.end)
         })
       }
     }
     return dbAvail
   }
 
+  // todo: 
+  // use beforeValidate or beforeChange instead to allow us to reformat the data
+  // before sending it to the db, this way we can stop with all this conversion 
+  // shenanigans
+
   const uiFormat = (dbAvail) => {
     // converts the availability array into the format used by the ui
     const array = Array(7).fill().map(() => [])
+    console.log(generateId())
     for (let block of dbAvail || []) {
       let row = Math.floor(block.start/24)
-      array[row].push([block.start % 24, block.end % 24])
+      array[row].push({
+        "start": block.start % 24, 
+        "end": block.end % 24, 
+        "id": generateId()
+      })
     }
     return array
   }
@@ -54,10 +58,14 @@ export const AvailabilitySelector = ({ path }) => {
 
   const handleAddTimeBlock = (rowIndex) => {
     const newBlock = { 
-      start: hourOfWeek(8, rowIndex), 
-      end: hourOfWeek(12, rowIndex)
+      "start": hourOfWeek(8, rowIndex), 
+      "end": hourOfWeek(12, rowIndex),
+      "id" : generateId()
     }
     setValue([...(value || []), newBlock])
+  }
+  
+  const handleDeleteTimeBlock = (id) => {
   }
 
   return (
@@ -90,10 +98,10 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock}) =>
         +
       </div>
       {timeBlocks.map(
-        ([start, end]) => {
+        ({start, end, id}) => {
           return (
             <TimeBlock
-              key={start+end}
+              key={id}
               start={start}
               end={end}
               handleEditTimeBlock={handleEditTimeBlock}
