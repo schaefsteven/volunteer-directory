@@ -1,6 +1,6 @@
 'use client' 
 import React from 'react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
@@ -8,45 +8,22 @@ import cn from 'classnames'
 //todo:
 
 export const AvailabilitySelector = ({ path }) => {
-  const { value: dbValue = [], setValue: setDbValue } = useField({ path })
+  const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
-
-  const dbFormat = (uiAvail) => {
-    // converts the availability array into the format stored in the database
-    let dbAvail = []
-    for (let day of uiAvail) {
-      for (let block of day) {
-        dbAvail.push({
-          "start": hourOfWeek(block.start),
-          "end": hourOfWeek(block.end)
-        })
-      }
-    }
-    return dbAvail
-  }
-
+  
   const uiFormat = (dbAvail) => {
     // converts the availability array into the format used by the ui
+    let id = 0
     const array = Array(7).fill().map(() => [])
     for (let block of dbAvail || []) {
       let row = Math.floor(block.start/24)
       array[row].push({
         "start": block.start % 24, 
         "end": block.end % 24, 
-        "id": generateId()
+        "id": id++
       })
     }
     return array
-  }
-
-  const lastId = useRef(0);
-  const generateId = () => ++lastId.current
-
-  const [uiValue, setUiValue] = useState(uiFormat(dbValue))
-
-  const setValue = (uiValue) => {
-    setUiValue(uiValue)
-    setDbValue(dbFormat(uiValue))
   }
 
   const hourOfWeek = (hour, day) => {
@@ -59,25 +36,26 @@ export const AvailabilitySelector = ({ path }) => {
 
   const handleAddTimeBlock = (rowIndex) => {
     const newBlock = { 
-      "start": hourOfWeek(8, rowIndex), 
+      "start": hourOfWeek(8, rowIndex),
       "end": hourOfWeek(12, rowIndex),
-      "id" : generateId()
     }
     setValue([...(value || []), newBlock])
   }
   
   const handleDeleteTimeBlock = (id) => {
+    setValue(value.filter((_, i) => i !== id))
   }
 
   return (
     <div>
-      {uiValue.map((timeBlocks, rowIndex) => (
+      {uiFormat(value).map((timeBlocks, rowIndex) => (
         <Row
           key={rowIndex}
           rowIndex={rowIndex}
           timeBlocks={timeBlocks}
           handleAddTimeBlock={handleAddTimeBlock}
           handleEditTimeBlock={handleEditTimeBlock}
+          handleDeleteTimeBlock={handleDeleteTimeBlock}
         />
       ))}
       {showModal && <EditModal/>}
@@ -85,7 +63,7 @@ export const AvailabilitySelector = ({ path }) => {
   )
 }
 
-const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock}) => {
+const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, handleDeleteTimeBlock}) => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
   return (
@@ -106,6 +84,8 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock}) =>
               start={start}
               end={end}
               handleEditTimeBlock={handleEditTimeBlock}
+              handleDeleteTimeBlock={handleDeleteTimeBlock}
+              id={id}
             />
           )
         }
@@ -114,7 +94,7 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock}) =>
   )
 }
 
-const TimeBlock = ({start, end, handleEditTimeBlock}) => {
+const TimeBlock = ({start, end, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
   const timeFormat = (num) => {
     if (num < 12) {
       return num + 'am'
@@ -139,6 +119,13 @@ const TimeBlock = ({start, end, handleEditTimeBlock}) => {
       >
         edit
       </div>
+      <div 
+        role="button"
+        onClick={() => handleDeleteTimeBlock(id)}
+      >
+        delete
+      </div>
+      <span>{id}</span>
     </div>
   )
 }
