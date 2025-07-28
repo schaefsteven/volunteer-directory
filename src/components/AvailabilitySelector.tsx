@@ -8,16 +8,9 @@ import cn from 'classnames'
 //todo:
 
 export const AvailabilitySelector = ({ path }) => {
-  const { value = [], setValue } = useField({ path })
+  const { value: dbValue = [], setValue: setDbValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
 
-  const lastId = useRef(0);
-  const generateId = () => ++lastId.current
-
-  const hourOfWeek = (hour, day) => {
-    return hour + (day * 24)
-  }
-  
   const dbFormat = (uiAvail) => {
     // converts the availability array into the format stored in the database
     let dbAvail = []
@@ -32,15 +25,9 @@ export const AvailabilitySelector = ({ path }) => {
     return dbAvail
   }
 
-  // todo: 
-  // use beforeValidate or beforeChange instead to allow us to reformat the data
-  // before sending it to the db, this way we can stop with all this conversion 
-  // shenanigans
-
   const uiFormat = (dbAvail) => {
     // converts the availability array into the format used by the ui
     const array = Array(7).fill().map(() => [])
-    console.log(generateId())
     for (let block of dbAvail || []) {
       let row = Math.floor(block.start/24)
       array[row].push({
@@ -52,6 +39,20 @@ export const AvailabilitySelector = ({ path }) => {
     return array
   }
 
+  const lastId = useRef(0);
+  const generateId = () => ++lastId.current
+
+  const [uiValue, setUiValue] = useState(uiFormat(dbValue))
+
+  const setValue = (uiValue) => {
+    setUiValue(uiValue)
+    setDbValue(dbFormat(uiValue))
+  }
+
+  const hourOfWeek = (hour, day) => {
+    return hour + (day * 24)
+  }
+  
   const handleEditTimeBlock = () => {
     setShowModal((showModal) => !showModal)
   }
@@ -70,7 +71,7 @@ export const AvailabilitySelector = ({ path }) => {
 
   return (
     <div>
-      {uiFormat(value).map((timeBlocks, rowIndex) => (
+      {uiValue.map((timeBlocks, rowIndex) => (
         <Row
           key={rowIndex}
           rowIndex={rowIndex}
