@@ -26,6 +26,19 @@ export const AvailabilitySelector = ({ path }) => {
     return array
   }
 
+  const dbFormat = (uiAvail) => {
+    let array = []
+    for (let rowIndex in uiAvail) {
+      for (let block of uiAvail[rowIndex]) {
+        array.push({
+          "start": hourOfWeek(block.start, rowIndex),
+          "end": hourOfWeek(block.end, rowIndex)
+        })
+      }
+    }
+    return array.sort((a, b) => a.start - b.start)
+  }
+
   const hourOfWeek = (hour, day) => {
     return hour + (day * 24)
   }
@@ -39,16 +52,20 @@ export const AvailabilitySelector = ({ path }) => {
       "start": hourOfWeek(8, rowIndex),
       "end": hourOfWeek(12, rowIndex),
     }
-    setValue([...(value || []), newBlock])
+    setValue([...(value || []), newBlock].sort((a, b) => a.start - b.start))
   }
   
-  const handleDeleteTimeBlock = (id) => {
-    setValue(value.filter((_, i) => i !== id))
+  const handleDeleteTimeBlock = (id, rowIndex) => {
+    const newUiAvail = [...uiAvail]
+    newUiAvail[rowIndex] = newUiAvail[rowIndex].filter((el) => el.id !== id)
+    setValue(dbFormat(newUiAvail))
   }
+
+  const uiAvail = uiFormat(value)
 
   return (
     <div>
-      {uiFormat(value).map((timeBlocks, rowIndex) => (
+      {uiAvail.map((timeBlocks, rowIndex) => (
         <Row
           key={rowIndex}
           rowIndex={rowIndex}
@@ -86,6 +103,7 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, han
               handleEditTimeBlock={handleEditTimeBlock}
               handleDeleteTimeBlock={handleDeleteTimeBlock}
               id={id}
+              rowIndex={rowIndex}
             />
           )
         }
@@ -94,7 +112,7 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, han
   )
 }
 
-const TimeBlock = ({start, end, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
+const TimeBlock = ({start, end, rowIndex, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
   const timeFormat = (num) => {
     if (num < 12) {
       return num + 'am'
@@ -121,7 +139,7 @@ const TimeBlock = ({start, end, handleEditTimeBlock, handleDeleteTimeBlock, id})
       </div>
       <div 
         role="button"
-        onClick={() => handleDeleteTimeBlock(id)}
+        onClick={() => handleDeleteTimeBlock(id, rowIndex)}
       >
         delete
       </div>
