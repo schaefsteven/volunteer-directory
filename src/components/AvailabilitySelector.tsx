@@ -4,10 +4,24 @@ import { useState, useRef, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
+import { interval, setHours, setDay, format } from "date-fns"
+import { DEFAULT_DATE } from '@/constants'
 
 //todo:
+//date-fns for datetime object handling and interval comparison
+//chrono-node for time parsing
+//
 
 export const AvailabilitySelector = ({ path }) => {
+
+  console.log(format(DEFAULT_DATE, 'eee, MM/dd/yyyy hh:mm'))
+  const sundayDate = setDay(DEFAULT_DATE, 0)
+  console.log(format(sundayDate, 'eee, MM/dd/yyyy hh:mm'))
+  const mondayDate = setDay(DEFAULT_DATE, 1)
+  console.log(format(mondayDate, 'eee, MM/dd/yyyy hh:mm'))
+  const saturdayDate = setDay(DEFAULT_DATE, 7)
+  console.log(format(saturdayDate, 'eee, MM/dd/yyyy hh:mm'))
+
   const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
   
@@ -36,7 +50,13 @@ export const AvailabilitySelector = ({ path }) => {
         })
       }
     }
-    return array.sort((a, b) => a.start - b.start)
+    array = array.sort((a, b) => a.start - b.start)
+    for (let [index, block] of array.entries()) {
+      if (array?.[index + 1]) {
+        console.log('another')
+      }
+    }
+    return array
   }
 
   const hourOfWeek = (hour, day) => {
@@ -49,7 +69,7 @@ export const AvailabilitySelector = ({ path }) => {
 
   const handleAddTimeBlock = (rowIndex) => {
     const newBlock = { 
-      "start": hourOfWeek(8, rowIndex),
+      "start": hourOfWeek(0, rowIndex),
       "end": hourOfWeek(12, rowIndex),
     }
     setValue([...(value || []), newBlock].sort((a, b) => a.start - b.start))
@@ -114,7 +134,9 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, han
 
 const TimeBlock = ({start, end, rowIndex, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
   const timeFormat = (num) => {
-    if (num < 12) {
+    if (num < 1) {
+      return num + 12 + 'am'
+    } else if (num < 12) {
       return num + 'am'
     } else if (num == 12) {
       return num + 'pm'
