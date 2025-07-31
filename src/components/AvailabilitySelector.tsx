@@ -4,40 +4,52 @@ import { useState, useRef, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
-import { interval, setHours, setDay, format } from "date-fns"
+import { interval, setHours, setDay, setMinutes, getDay, format, parse, fromUnixTime } from "date-fns"
 import { DEFAULT_DATE } from '@/constants'
 
 //todo:
 //date-fns for datetime object handling and interval comparison
 //chrono-node for time parsing
 //
+//
+
+const TIME_FORMAT = 'h:mm aaa'
 
 export const AvailabilitySelector = ({ path }) => {
 
-  console.log(format(DEFAULT_DATE, 'eee, MM/dd/yyyy hh:mm'))
-  const sundayDate = setDay(DEFAULT_DATE, 0)
-  console.log(format(sundayDate, 'eee, MM/dd/yyyy hh:mm'))
-  const mondayDate = setDay(DEFAULT_DATE, 1)
-  console.log(format(mondayDate, 'eee, MM/dd/yyyy hh:mm'))
-  const saturdayDate = setDay(DEFAULT_DATE, 7)
-  console.log(format(saturdayDate, 'eee, MM/dd/yyyy hh:mm'))
+  //console.log(format(DEFAULT_DATE, 'eee, MM/dd/yyyy hh:mm'))
+  //const sundayDate = setDay(DEFAULT_DATE, 0)
+  //console.log(format(sundayDate, 'eee, MM/dd/yyyy hh:mm'))
+  //const mondayDate = setDay(DEFAULT_DATE, 1)
+  //console.log(format(mondayDate, 'eee, MM/dd/yyyy hh:mm'))
+  //const saturdayDate = setDay(DEFAULT_DATE, 7)
+  //console.log(format(saturdayDate, 'eee, MM/dd/yyyy hh:mm'))
+  //const myInterval = interval(sundayDate, mondayDate)
+  //console.log(myInterval)
+  //console.log(format(myInterval.start, TIME_FORMAT))
 
   const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
+
+  const num = 1163700
+  console.log(fromUnixTime(num))
   
   const uiFormat = (dbAvail) => {
     // converts the availability array into the format used by the ui
     let id = 0
     const array = Array(7).fill().map(() => [])
     for (let block of dbAvail || []) {
-      let row = Math.floor(block.start/24)
+      let row = getDay(block.start)
       array[row].push({
-        "start": block.start % 24, 
-        "end": block.end % 24, 
+        "interval": block,
         "id": id++
       })
     }
     return array
+  }
+
+  const setTimeBlock = (day, hour, minute) => {
+    return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
   }
 
   const dbFormat = (uiAvail) => {
@@ -68,10 +80,11 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const handleAddTimeBlock = (rowIndex) => {
-    const newBlock = { 
-      "start": hourOfWeek(0, rowIndex),
-      "end": hourOfWeek(12, rowIndex),
-    }
+    const newBlock = interval(
+      setTimeBlock(rowIndex, 6, 15),
+      setTimeBlock(rowIndex, 14, 45)
+    )
+    console.log(typeof newBlock.start)
     setValue([...(value || []), newBlock].sort((a, b) => a.start - b.start))
   }
   
@@ -114,12 +127,12 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, han
         +
       </div>
       {timeBlocks.map(
-        ({start, end, id}) => {
+        ({interval, id}) => {
           return (
             <TimeBlock
               key={id}
-              start={start}
-              end={end}
+              start={interval.start}
+              end={interval.end}
               handleEditTimeBlock={handleEditTimeBlock}
               handleDeleteTimeBlock={handleDeleteTimeBlock}
               id={id}
@@ -150,9 +163,9 @@ const TimeBlock = ({start, end, rowIndex, handleEditTimeBlock, handleDeleteTimeB
     <div 
       className={cn(styles.avsel_time_block)}
     >
-      <span>{timeFormat(start)}</span>
+      <span>{format(start, TIME_FORMAT)}</span>
       <span>-</span>
-      <span>{timeFormat(end)}</span>
+      <span>{format(end, TIME_FORMAT)}</span>
       <div 
         role="button"
         onClick={handleEditTimeBlock}

@@ -1,4 +1,5 @@
-import { CollectionConfig } from "payload";
+import { CollectionConfig } from "payload"
+import { format, fromUnixTime } from "date-fns"
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -94,6 +95,28 @@ export const Listings: CollectionConfig = {
                         Field: '/components/AvailabilitySelector',
                     },
                 },
+                hooks: {
+                    beforeValidate: [
+                      ({ value }) => {
+                        const dbFormat = (date) => { return parseInt(format(date, 't')) }
+                        for (let block of value) {
+                          if (block?.start) block.start = dbFormat(block.start)
+                          if (block?.end) block.end = dbFormat(block.end)
+                        }
+                        return value
+                      }
+                    ], 
+                    afterRead: [
+                      ({ value }) => {
+                        const uiFormat = (date) => { return parse(date.toString(), 't') }
+                        for (let block of value) {
+                          if (block?.start) block.start = fromUnixTime(block.start)
+                          if (block?.end) block.end = fromUnixTime(block.end)
+                        }
+                        return value
+                      }
+                    ]
+                }
             },
         ],
     },
