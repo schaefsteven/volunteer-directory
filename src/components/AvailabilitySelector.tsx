@@ -17,14 +17,11 @@ const TIME_FORMAT = 'h:mm aaa'
 export const AvailabilitySelector = ({ path }) => {
 
   const { value = [], setValue } = useField({ path })
-  const [showModal, setShowModal] = useState(false)
+
+  const editModalRef = useRef(null)
 
   const createTime = (day, hour, minute) => {
     return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
-  }
-
-  const handleEditTimeBlock = () => {
-    setShowModal((showModal) => !showModal)
   }
 
   const handleAddTimeBlock = (day) => {
@@ -48,23 +45,29 @@ export const AvailabilitySelector = ({ path }) => {
 
 
   return (
-    <div>
+    <div
+      className="border-8"
+    >
       {rows.map((timeBlocks, day) => (
         <Row
           key={day}
           day={day}
           timeBlocks={timeBlocks}
           handleAddTimeBlock={handleAddTimeBlock}
-          handleEditTimeBlock={handleEditTimeBlock}
           handleDeleteTimeBlock={handleDeleteTimeBlock}
+          editModalRef={editModalRef}
         />
       ))}
-      {showModal && <EditModal/>}
+      {
+        <EditModal
+          editModalRef={editModalRef}
+        />
+      }
     </div>
   )
 }
 
-const Row = ({day, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, handleDeleteTimeBlock}) => {
+const Row = ({day, timeBlocks, handleAddTimeBlock, handleDeleteTimeBlock, editModalRef}) => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
   return (
@@ -84,8 +87,8 @@ const Row = ({day, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, handleDe
               key={index}
               start={block.start}
               end={block.end}
-              handleEditTimeBlock={handleEditTimeBlock}
               handleDeleteTimeBlock={handleDeleteTimeBlock}
+              editModalRef={editModalRef}
               id={index}
               day={day}
             />
@@ -96,7 +99,7 @@ const Row = ({day, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, handleDe
   )
 }
 
-const TimeBlock = ({start, end, day, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
+const TimeBlock = ({start, end, day, handleDeleteTimeBlock, editModalRef, id}) => {
   return (
     <div 
       className={cn(styles.avsel_time_block)}
@@ -106,7 +109,7 @@ const TimeBlock = ({start, end, day, handleEditTimeBlock, handleDeleteTimeBlock,
       <span>{format(end, TIME_FORMAT)}</span>
       <div 
         role="button"
-        onClick={handleEditTimeBlock}
+        onClick={() => editModalRef.current.showModal()}
       >
         edit
       </div>
@@ -120,9 +123,38 @@ const TimeBlock = ({start, end, day, handleEditTimeBlock, handleDeleteTimeBlock,
   )
 }
 
-const EditModal = () => {
+const EditModal = ({ editModalRef }) => {
   return (
-    <p>EDIT MODAL</p>
+    <>
+      <dialog 
+        ref={editModalRef}
+        className="bg-white"
+      >
+        <div>
+          <header>
+            <h2
+              className="text-red-50"
+            >
+              Edit Time Block
+            </h2>
+            <button
+              onClick={() => editModalRef.current.close()}
+              type="button"
+            >
+              x
+            </button>
+          </header>
+          <main>
+            <p>put edit fields here</p>
+          </main>
+          <footer>
+            <button>Save</button>
+            <button>Cancel</button>
+            <button>Delete</button>
+          </footer>
+        </div>
+      </dialog>
+    </>
   )
 }
 
