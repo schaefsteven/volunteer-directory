@@ -19,7 +19,7 @@ export const AvailabilitySelector = ({ path }) => {
   const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
 
-  const setTime = (day, hour, minute) => {
+  const createTime = (day, hour, minute) => {
     return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
   }
 
@@ -28,31 +28,31 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const handleAddTimeBlock = (day) => {
-    const newBlock = {
-      "interval": interval(
-        setTime(day, 6, 15),
-        setTime(day, 14, 45)
-      ),
-      "id": value[day].length
-    }
-    const newValue = [...value]
-    newValue[day].push(newBlock)
-    setValue(newValue)
+    const newBlock = interval(
+      createTime(day, 6, 15),
+      createTime(day, 14, 45)
+    )
+    setValue([...value, newBlock])
   }
   
-  const handleDeleteTimeBlock = (id, day) => {
-    const newValue = [...value]
-    newValue[day] = newValue[day].filter((el) => el.id != id)
-    setValue(newValue)
+  const handleDeleteTimeBlock = (index, day) => {
+    const newValue = [...rows]
+    newValue[day].splice(index, 1)
+    setValue(newValue.flat())
+  }
+
+  const rows = Array(7).fill().map(() => [])
+  for (let block of value) {
+    rows[getDay(block.start)].push(block)
   }
 
 
   return (
     <div>
-      {value.map((timeBlocks, rowIndex) => (
+      {rows.map((timeBlocks, day) => (
         <Row
-          key={rowIndex}
-          rowIndex={rowIndex}
+          key={day}
+          day={day}
           timeBlocks={timeBlocks}
           handleAddTimeBlock={handleAddTimeBlock}
           handleEditTimeBlock={handleEditTimeBlock}
@@ -64,30 +64,30 @@ export const AvailabilitySelector = ({ path }) => {
   )
 }
 
-const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, handleDeleteTimeBlock}) => {
+const Row = ({day, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, handleDeleteTimeBlock}) => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
   return (
-    <div key={rowIndex} className={cn(styles.avsel_row)}>
-      <label>{labels[rowIndex]}</label>
+    <div key={day} className={cn(styles.avsel_row)}>
+      <label>{labels[day]}</label>
       <div 
         role="button" 
         className={cn(styles.avsel_add_button)}
-        onClick={() => handleAddTimeBlock(rowIndex)}
+        onClick={() => handleAddTimeBlock(day)}
       >
         +
       </div>
       {timeBlocks.map(
-        ({interval, id}) => {
+        (block, index) => {
           return (
             <TimeBlock
-              key={id}
-              start={interval.start}
-              end={interval.end}
+              key={index}
+              start={block.start}
+              end={block.end}
               handleEditTimeBlock={handleEditTimeBlock}
               handleDeleteTimeBlock={handleDeleteTimeBlock}
-              id={id}
-              rowIndex={rowIndex}
+              id={index}
+              day={day}
             />
           )
         }
@@ -96,20 +96,7 @@ const Row = ({rowIndex, timeBlocks, handleAddTimeBlock, handleEditTimeBlock, han
   )
 }
 
-const TimeBlock = ({start, end, rowIndex, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
-  const timeFormat = (num) => {
-    if (num < 1) {
-      return num + 12 + 'am'
-    } else if (num < 12) {
-      return num + 'am'
-    } else if (num == 12) {
-      return num + 'pm'
-    } else if (num != 24) {
-      return num - 12 + 'pm'
-    } else {
-      return num - 12 + 'am'
-    }
-  }
+const TimeBlock = ({start, end, day, handleEditTimeBlock, handleDeleteTimeBlock, id}) => {
   return (
     <div 
       className={cn(styles.avsel_time_block)}
@@ -125,11 +112,10 @@ const TimeBlock = ({start, end, rowIndex, handleEditTimeBlock, handleDeleteTimeB
       </div>
       <div 
         role="button"
-        onClick={() => handleDeleteTimeBlock(id, rowIndex)}
+        onClick={() => handleDeleteTimeBlock(id, day)}
       >
         delete
       </div>
-      <span>{id}</span>
     </div>
   )
 }

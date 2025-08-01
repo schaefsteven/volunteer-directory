@@ -100,30 +100,20 @@ export const Listings: CollectionConfig = {
                     beforeValidate: [
                       ({ value }) => {
                         value = value.flat()
-                        value = value.map(el => el.interval)
                         for (let block of value) {
                           block.start = getUnixTime(block.start)
                           block.end = getUnixTime(block.end)
                         }
-                        return value
+                        return value.sort((a, b) => a.start - b.start)
                       }
                     ], 
                     // when reading from the db to the admin panel
                     afterRead: [
                       ({ value }) => {
-                        let id = 0
-                        const array = Array(7).fill().map(() => [])
-                        for (let block of value) {
-                          const day = getDay(fromUnixTime(block.start))
-                          array[day].push({
-                            "interval": interval(
-                              fromUnixTime(block.start),
-                              fromUnixTime(block.end)
-                            ),
-                            "id": array[day].length
-                          })
-                        }
-                        return array
+                        return value.map((block) => interval(
+                          fromUnixTime(block.start),
+                          fromUnixTime(block.end)
+                        ))
                       }
                     ]
                 }
