@@ -11,94 +11,45 @@ import { DEFAULT_DATE } from '@/constants'
 //date-fns for datetime object handling and interval comparison
 //chrono-node for time parsing
 //
-//
 
 const TIME_FORMAT = 'h:mm aaa'
 
 export const AvailabilitySelector = ({ path }) => {
 
-  //console.log(format(DEFAULT_DATE, 'eee, MM/dd/yyyy hh:mm'))
-  //const sundayDate = setDay(DEFAULT_DATE, 0)
-  //console.log(format(sundayDate, 'eee, MM/dd/yyyy hh:mm'))
-  //const mondayDate = setDay(DEFAULT_DATE, 1)
-  //console.log(format(mondayDate, 'eee, MM/dd/yyyy hh:mm'))
-  //const saturdayDate = setDay(DEFAULT_DATE, 7)
-  //console.log(format(saturdayDate, 'eee, MM/dd/yyyy hh:mm'))
-  //const myInterval = interval(sundayDate, mondayDate)
-  //console.log(myInterval)
-  //console.log(format(myInterval.start, TIME_FORMAT))
-
   const { value = [], setValue } = useField({ path })
   const [showModal, setShowModal] = useState(false)
 
-  const num = 1163700
-  console.log(fromUnixTime(num))
-  
-  const uiFormat = (dbAvail) => {
-    // converts the availability array into the format used by the ui
-    let id = 0
-    const array = Array(7).fill().map(() => [])
-    for (let block of dbAvail || []) {
-      let row = getDay(block.start)
-      array[row].push({
-        "interval": block,
-        "id": id++
-      })
-    }
-    return array
-  }
-
-  const setTimeBlock = (day, hour, minute) => {
+  const setTime = (day, hour, minute) => {
     return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
   }
 
-  const dbFormat = (uiAvail) => {
-    let array = []
-    for (let rowIndex in uiAvail) {
-      for (let block of uiAvail[rowIndex]) {
-        array.push({
-          "start": hourOfWeek(block.start, rowIndex),
-          "end": hourOfWeek(block.end, rowIndex)
-        })
-      }
-    }
-    array = array.sort((a, b) => a.start - b.start)
-    for (let [index, block] of array.entries()) {
-      if (array?.[index + 1]) {
-        console.log('another')
-      }
-    }
-    return array
-  }
-
-  const hourOfWeek = (hour, day) => {
-    return hour + (day * 24)
-  }
-  
   const handleEditTimeBlock = () => {
     setShowModal((showModal) => !showModal)
   }
 
-  const handleAddTimeBlock = (rowIndex) => {
-    const newBlock = interval(
-      setTimeBlock(rowIndex, 6, 15),
-      setTimeBlock(rowIndex, 14, 45)
-    )
-    console.log(typeof newBlock.start)
-    setValue([...(value || []), newBlock].sort((a, b) => a.start - b.start))
+  const handleAddTimeBlock = (day) => {
+    const newBlock = {
+      "interval": interval(
+        setTime(day, 6, 15),
+        setTime(day, 14, 45)
+      ),
+      "id": value[day].length
+    }
+    const newValue = [...value]
+    newValue[day].push(newBlock)
+    setValue(newValue)
   }
   
-  const handleDeleteTimeBlock = (id, rowIndex) => {
-    const newUiAvail = [...uiAvail]
-    newUiAvail[rowIndex] = newUiAvail[rowIndex].filter((el) => el.id !== id)
-    setValue(dbFormat(newUiAvail))
+  const handleDeleteTimeBlock = (id, day) => {
+    const newValue = [...value]
+    newValue[day] = newValue[day].filter((el) => el.id != id)
+    setValue(newValue)
   }
 
-  const uiAvail = uiFormat(value)
 
   return (
     <div>
-      {uiAvail.map((timeBlocks, rowIndex) => (
+      {value.map((timeBlocks, rowIndex) => (
         <Row
           key={rowIndex}
           rowIndex={rowIndex}

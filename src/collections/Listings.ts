@@ -1,5 +1,5 @@
 import { CollectionConfig } from "payload"
-import { format, fromUnixTime } from "date-fns"
+import { getUnixTime, fromUnixTime, getDay, interval } from "date-fns"
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -96,24 +96,34 @@ export const Listings: CollectionConfig = {
                     },
                 },
                 hooks: {
+                    // before saving to db
                     beforeValidate: [
                       ({ value }) => {
-                        const dbFormat = (date) => { return parseInt(format(date, 't')) }
+                        value = value.flat()
+                        value = value.map(el => el.interval)
                         for (let block of value) {
-                          if (block?.start) block.start = dbFormat(block.start)
-                          if (block?.end) block.end = dbFormat(block.end)
+                          block.start = getUnixTime(block.start)
+                          block.end = getUnixTime(block.end)
                         }
                         return value
                       }
                     ], 
+                    // when reading from the db to the admin panel
                     afterRead: [
                       ({ value }) => {
-                        const uiFormat = (date) => { return parse(date.toString(), 't') }
+                        let id = 0
+                        const array = Array(7).fill().map(() => [])
                         for (let block of value) {
-                          if (block?.start) block.start = fromUnixTime(block.start)
-                          if (block?.end) block.end = fromUnixTime(block.end)
+                          const day = getDay(fromUnixTime(block.start))
+                          array[day].push({
+                            "interval": interval(
+                              fromUnixTime(block.start),
+                              fromUnixTime(block.end)
+                            ),
+                            "id": array[day].length
+                          })
                         }
-                        return value
+                        return array
                       }
                     ]
                 }
