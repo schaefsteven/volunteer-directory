@@ -20,14 +20,13 @@ export const AvailabilitySelector = ({ path }) => {
 
   const editModalRef = useRef(null)
 
-  const [editingBlock, setEditingBlock] = useState(null)
-  const [editingBlockID, setEditingBlockID] = useState(null)
+  const [editContext, setEditContext] = useState(null)
 
   const createTime = (day, hour, minute) => {
     return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
   }
 
-  const handleAddTimeBlock = (day) => {
+  const handleAddButton = (day) => {
     const newBlock = interval(
       createTime(day, 6, 15),
       createTime(day, 14, 45)
@@ -35,26 +34,36 @@ export const AvailabilitySelector = ({ path }) => {
     setValue([...value, newBlock])
   }
   
-  const handleDeleteTimeBlock = (day, index) => {
+  const handleEditButton = (day, index) => {
+    editModalRef.current.showModal()
+    setEditContext(
+      {
+        'block': rows[day][index],
+        'day': day,
+        'index': index
+      }
+    )
+  }
+
+  const handleDeleteButton = (day, index) => {
     const newValue = [...rows]
     newValue[day].splice(index, 1)
     setValue(newValue.flat())
+    editModalRef.current.close()
   }
 
-  const handleShowEditModal = (day, index) => {
-    editModalRef.current.showModal()
-    setEditingBlock(rows[day][index])
-    setEditingBlockID({
-      'day': day,
-      'index': index
-    })
+  const handleCancelButton = () => {
+    editModalRef.current.close()
+  }
+ 
+  const handleSaveButton = () => {
+    console.log("saved!")
   }
 
   const rows = Array(7).fill().map(() => [])
   for (let block of value) {
     rows[getDay(block.start)].push(block)
   }
-
 
   return (
     <div>
@@ -63,22 +72,24 @@ export const AvailabilitySelector = ({ path }) => {
           key={day}
           day={day}
           timeBlocks={timeBlocks}
-          handleAddTimeBlock={handleAddTimeBlock}
-          handleShowEditModal={handleShowEditModal}
+          handleAddButton={handleAddButton}
+          handleEditButton={handleEditButton}
         />
       ))}
       {
         <EditModal
+          handleDeleteButton={handleDeleteButton}
+          handleCancelButton={handleCancelButton}
+          handleSaveButton={handleSaveButton}
+          editContext={editContext}
           editModalRef={editModalRef}
-          handleDeleteTimeBlock={handleDeleteTimeBlock}
-          editingBlockID={editingBlockID}
         />
       }
     </div>
   )
 }
 
-const Row = ({day, timeBlocks, handleAddTimeBlock, handleShowEditModal}) => {
+const Row = ({day, timeBlocks, handleAddButton, handleEditButton}) => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
   return (
@@ -88,7 +99,7 @@ const Row = ({day, timeBlocks, handleAddTimeBlock, handleShowEditModal}) => {
         role="button" 
         type="button"
         className={cn(styles.avsel_add_button)}
-        onClick={() => handleAddTimeBlock(day)}
+        onClick={() => handleAddButton(day)}
       >
         +
       </button>
@@ -101,7 +112,7 @@ const Row = ({day, timeBlocks, handleAddTimeBlock, handleShowEditModal}) => {
               end={block.end}
               index={index}
               day={day}
-              handleShowEditModal={handleShowEditModal}
+              handleEditButton={handleEditButton}
             />
           )
         }
@@ -110,7 +121,7 @@ const Row = ({day, timeBlocks, handleAddTimeBlock, handleShowEditModal}) => {
   )
 }
 
-const TimeBlock = ({start, end, day, handleShowEditModal, index}) => {
+const TimeBlock = ({start, end, day, handleEditButton, index}) => {
   return (
     <div 
       className={cn(styles.avsel_time_block)}
@@ -120,7 +131,7 @@ const TimeBlock = ({start, end, day, handleShowEditModal, index}) => {
       <span>{format(end, TIME_FORMAT)}</span>
       <div 
         role="button"
-        onClick={() => handleShowEditModal(day, index)}
+        onClick={() => handleEditButton(day, index)}
       >
         edit
       </div>
@@ -128,7 +139,7 @@ const TimeBlock = ({start, end, day, handleShowEditModal, index}) => {
   )
 }
 
-const EditModal = ({ editModalRef, handleDeleteTimeBlock, editingBlockID }) => {
+const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, editContext, editModalRef }) => {
   return (
     <>
       <dialog 
@@ -141,7 +152,7 @@ const EditModal = ({ editModalRef, handleDeleteTimeBlock, editingBlockID }) => {
               Edit Time Block
             </h2>
             <button
-              onClick={() => editModalRef.current.close()}
+              onClick={() => handleCancelButton()}
               type="button"
             >
               x
@@ -149,25 +160,28 @@ const EditModal = ({ editModalRef, handleDeleteTimeBlock, editingBlockID }) => {
           </header>
           <main>
             <p>put edit fields here</p>
+            <span>{format(editContext.block.start, TIME_FORMAT)}</span>
+            <span>-</span>
+            <span>{format(editContext.block.end, TIME_FORMAT)}</span>
           </main>
           <footer>
             <button
-              onClick={() => {}}
+              onClick={() => handleDeleteButton(editContext.day, editContext.index)}
               type="button"
             >
-              Save
+              Delete
             </button>
             <button
-              onClick={() => {}}
+              onClick={() => handleCancelButton()}
               type="button"
             >
               Cancel
             </button>
             <button
-              onClick={() => handleDeleteTimeBlock(editingBlockID.day, editingBlockID.index)}
+              onClick={() => handleSaveButton()}
               type="button"
             >
-              Delete
+              Save
             </button>
           </footer>
         </div>
