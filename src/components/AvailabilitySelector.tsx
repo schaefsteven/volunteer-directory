@@ -26,16 +26,24 @@ export const AvailabilitySelector = ({ path }) => {
     return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
   }
 
+  const flatSort = (rows) => {
+    return rows.flat().sort((a, b) => a.start - b.start)
+  }
+
+  //const handleAddButton = (day) => {
+    //const newBlock = interval(
+      //createTime(day, 6, 15),
+      //createTime(day, 14, 45)
+    //)
+    //setValue(flatSort([...value, newBlock]))
+  //}
+
   const handleAddButton = (day) => {
-    const newBlock = interval(
-      createTime(day, 6, 15),
-      createTime(day, 14, 45)
-    )
-    setValue([...value, newBlock])
+    setEditContext({'day': day})
+    editModalRef.current.showModal()
   }
   
   const handleEditButton = (day, index) => {
-    editModalRef.current.showModal()
     setEditContext(
       {
         'block': rows[day][index],
@@ -43,12 +51,13 @@ export const AvailabilitySelector = ({ path }) => {
         'index': index
       }
     )
+    editModalRef.current.showModal()
   }
 
   const handleDeleteButton = (day, index) => {
-    const newValue = [...rows]
-    newValue[day].splice(index, 1)
-    setValue(newValue.flat())
+    const newRows = [...rows]
+    newRows[day].splice(index, 1)
+    setValue(newRows.flat())
     editModalRef.current.close()
   }
 
@@ -57,13 +66,17 @@ export const AvailabilitySelector = ({ path }) => {
   }
  
   const handleSaveButton = (start, end) => {
-    console.log("saved!", editContext.day, editContext.index, start, end)
-    const newValue = [...rows]
-    newValue[editContext.day] = interval(
+    const newRows = [...rows]
+    const newBlock = interval (
       createTime(editContext.day, parseInt(start), 0),
       createTime(editContext.day, parseInt(end), 0)
     )
-    setValue(newValue.flat())
+    if (editContext?.block) {
+      newRows[editContext.day][editContext.index] = newBlock
+    } else {
+      newRows[editContext.day].push(newBlock)
+    }
+    setValue(flatSort(newRows))
     editModalRef.current.close()
   }
 
@@ -151,9 +164,12 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
   const [endTime, setEndTime] = useState('')
 
   useEffect(() => {
-    if (editContext) {
+    if (editContext?.block) {
       setStartTime(format(editContext.block.start, TIME_FORMAT))
       setEndTime(format(editContext.block.end, TIME_FORMAT))
+    } else {
+      setStartTime('')
+      setEndTime('')
     }
   }, [editContext])
 
