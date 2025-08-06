@@ -56,8 +56,15 @@ export const AvailabilitySelector = ({ path }) => {
     editModalRef.current.close()
   }
  
-  const handleSaveButton = () => {
-    console.log("saved!")
+  const handleSaveButton = (start, end) => {
+    console.log("saved!", editContext.day, editContext.index, start, end)
+    const newValue = [...rows]
+    newValue[editContext.day] = interval(
+      createTime(editContext.day, parseInt(start), 0),
+      createTime(editContext.day, parseInt(end), 0)
+    )
+    setValue(newValue.flat())
+    editModalRef.current.close()
   }
 
   const rows = Array(7).fill().map(() => [])
@@ -140,6 +147,16 @@ const TimeBlock = ({start, end, day, handleEditButton, index}) => {
 }
 
 const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, editContext, editModalRef }) => {
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
+
+  useEffect(() => {
+    if (editContext) {
+      setStartTime(format(editContext.block.start, TIME_FORMAT))
+      setEndTime(format(editContext.block.end, TIME_FORMAT))
+    }
+  }, [editContext])
+
   return (
     <>
       <dialog 
@@ -159,10 +176,19 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
             </button>
           </header>
           <main>
-            <p>put edit fields here</p>
-            <span>{format(editContext.block.start, TIME_FORMAT)}</span>
+            <input
+              type="text"
+              placeholder="Start"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
             <span>-</span>
-            <span>{format(editContext.block.end, TIME_FORMAT)}</span>
+            <input
+              type="text"
+              placeholder="End"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
           </main>
           <footer>
             <button
@@ -178,7 +204,7 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
               Cancel
             </button>
             <button
-              onClick={() => handleSaveButton()}
+              onClick={() => handleSaveButton(startTime, endTime)}
               type="button"
             >
               Save
