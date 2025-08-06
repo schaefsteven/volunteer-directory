@@ -30,16 +30,8 @@ export const AvailabilitySelector = ({ path }) => {
     return rows.flat().sort((a, b) => a.start - b.start)
   }
 
-  //const handleAddButton = (day) => {
-    //const newBlock = interval(
-      //createTime(day, 6, 15),
-      //createTime(day, 14, 45)
-    //)
-    //setValue(flatSort([...value, newBlock]))
-  //}
-
   const handleAddButton = (day) => {
-    setEditContext({'day': day})
+    setEditContext({'day': day, 'mode': 'add'})
     editModalRef.current.showModal()
   }
   
@@ -48,7 +40,8 @@ export const AvailabilitySelector = ({ path }) => {
       {
         'block': rows[day][index],
         'day': day,
-        'index': index
+        'index': index,
+        'mode': 'edit'
       }
     )
     editModalRef.current.showModal()
@@ -71,7 +64,7 @@ export const AvailabilitySelector = ({ path }) => {
       createTime(editContext.day, parseInt(start), 0),
       createTime(editContext.day, parseInt(end), 0)
     )
-    if (editContext?.block) {
+    if (editContext.mode == 'edit') {
       newRows[editContext.day][editContext.index] = newBlock
     } else {
       newRows[editContext.day].push(newBlock)
@@ -182,7 +175,7 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
         <div>
           <header>
             <h2>
-              Edit Time Block
+              {editContext?.mode === 'edit' ? 'Edit Time Block' : 'Add Time Block'}
             </h2>
             <button
               onClick={() => handleCancelButton()}
