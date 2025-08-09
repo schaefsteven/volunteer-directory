@@ -4,13 +4,13 @@ import { useState, useRef, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
-import { interval, setHours, setDay, setMinutes, getDay, format, parse, fromUnixTime } from "date-fns"
+import { add, interval, setHours, setDay, setMinutes, getDay, format, areIntervalsOverlapping } from "date-fns"
 import { DEFAULT_DATE } from '@/constants'
 
 //todo:
-//date-fns for datetime object handling and interval comparison
 //chrono-node for time parsing
-//
+//handle weekend wrapping
+//timezone selector
 
 const TIME_FORMAT = 'h:mm aaa'
 
@@ -22,12 +22,28 @@ export const AvailabilitySelector = ({ path }) => {
 
   const [editContext, setEditContext] = useState(null)
 
-  const createTime = (day, hour, minute) => {
+  const createTime = (day, hour = 0, minute = 0) => {
+    if (hour == 24) {
+      day ++
+    }
     return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
   }
 
-  const flatSort = (rows) => {
-    return rows.flat().sort((a, b) => a.start - b.start)
+  const flatSortMerge = (rows) => {
+    const flatSort = rows.flat().sort((a, b) => a.start - b.start)
+    const merged = [flatSort[0]]
+
+    for (let i = 1; i< flatSort.length; i++) {
+      const current = flatSort[i]
+      const lastMerged = merged[merged.length-1]
+
+      if (areIntervalsOverlapping(lastMerged, current, {inclusive : true})) {
+        lastMerged.end = current.end
+      } else {
+        merged.push(current)
+      }
+    }
+    return merged
   }
 
   const handleAddButton = (day) => {
@@ -50,7 +66,7 @@ export const AvailabilitySelector = ({ path }) => {
   const handleDeleteButton = (day, index) => {
     const newRows = [...rows]
     newRows[day].splice(index, 1)
-    setValue(newRows.flat())
+    setValue(flatSortMerge(newRows))
     editModalRef.current.close()
   }
 
@@ -69,13 +85,31 @@ export const AvailabilitySelector = ({ path }) => {
     } else {
       newRows[editContext.day].push(newBlock)
     }
-    setValue(flatSort(newRows))
+    setValue(flatSortMerge(newRows))
     editModalRef.current.close()
   }
 
   const rows = Array(7).fill().map(() => [])
   for (let block of value) {
-    rows[getDay(block.start)].push(block)
+    // split blocks that span midnight and add them to the rows array
+    const startDay = getDay(block.start)
+    const endDay = getDay(add(block.end, {minutes: -1}))
+    const numOfBlocks = endDay - startDay + 1
+    let startTime
+    let endTime
+    for (let i = 0; i < numOfBlocks; i++) {
+      if (i == 0) {
+        startTime = block.start
+      } else {
+        startTime = createTime(startDay + i)
+      }
+      if (i == numOfBlocks - 1) {
+        endTime = block.end
+      } else {
+        endTime = createTime(startDay + i + 1)
+      }
+      rows[startDay + i].push(interval(startTime, endTime))
+    }
   }
 
   return (

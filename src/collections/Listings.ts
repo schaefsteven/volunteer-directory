@@ -1,5 +1,5 @@
 import { CollectionConfig } from "payload"
-import { getUnixTime, fromUnixTime, getDay, interval } from "date-fns"
+import { getUnixTime, fromUnixTime, interval, areIntervalsOverlapping } from "date-fns"
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -99,12 +99,47 @@ export const Listings: CollectionConfig = {
                     // before saving to db
                     beforeValidate: [
                       ({ value }) => {
-                        value = value.flat()
-                        for (let block of value) {
+                        // value should already be flattened, sorted, and merged, but in case something goes wrong on the client, we do it again here.
+                        const flatSort = value.flat().sort((a, b) => a.start - b.start)
+                        const merged = [flatSort[0]]
+                        for (let i = 1; i< flatSort.length; i++) {
+                          const current = flatSort[i]
+                          const lastMerged = merged[merged.length-1]
+                          if (areIntervalsOverlapping(lastMerged, current, {inclusive : true})) {
+                            lastMerged.end = current.end
+                          } else {
+                            merged.push(current)
+                          }
+                        }
+
+                        // convert to unix timestamps
+                        for (let block of merged) {
                           block.start = getUnixTime(block.start)
                           block.end = getUnixTime(block.end)
                         }
-                        return value.sort((a, b) => a.start - b.start)
+                        
+                        // deal with ends
+                        const LOWER_BOUND = 882000
+                        const UPPPER_BOUND = 1486800
+                        const ONE_WEEK = 604800
+                        const bounded = []
+                        for (block of merged) {
+                          // we will assume that block cannot span both the lower and upper bounds because there's no way to create one that long
+                          if (block.start > LOWER_BOUND && block.end < UPPER_BOUND) {
+                            // block is in bounds
+                            bounded.push(block)
+                          } else if (block.start < LOWER_BOUND && block.end < LOWER_BOUND) {
+                            // block is before bounds
+                          } else if (block.start > UPPER_BOUND && block.end > UPPER_BOUND) {
+                            // block is after bounds
+                          } else if (block.start < LOWER_BOUND && block.end > LOWER_BOUND) {
+                            // block spans lower bounds
+                          } else if (block.start < UPPER_BOUND && block.end > UPPER_BOUND) {
+                            // block spans upper bounds
+                          }
+                        }
+
+                        return bounded
                       }
                     ], 
                     // when reading from the db to the admin panel
