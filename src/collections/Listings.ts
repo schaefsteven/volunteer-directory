@@ -119,23 +119,43 @@ export const Listings: CollectionConfig = {
                         }
                         
                         // deal with ends
-                        const LOWER_BOUND = 882000
-                        const UPPPER_BOUND = 1486800
+                        let LOWER_BOUND = 882000
+                        let UPPER_BOUND = 1486800
                         const ONE_WEEK = 604800
+                        
+                        LOWER_BOUND += 43200
+                        UPPER_BOUND += 43200
+
                         const bounded = []
-                        for (block of merged) {
+                        for (let block of merged) {
                           // we will assume that block cannot span both the lower and upper bounds because there's no way to create one that long
-                          if (block.start > LOWER_BOUND && block.end < UPPER_BOUND) {
+                          if (block.start >= LOWER_BOUND && block.end <= UPPER_BOUND) {
                             // block is in bounds
                             bounded.push(block)
-                          } else if (block.start < LOWER_BOUND && block.end < LOWER_BOUND) {
+                          } else if (block.start < LOWER_BOUND && block.end <= LOWER_BOUND) {
                             // block is before bounds
-                          } else if (block.start > UPPER_BOUND && block.end > UPPER_BOUND) {
+                            console.log('before bounds')
+                            block.start += ONE_WEEK
+                            block.end += ONE_WEEK
+                            bounded.push(block)
+                          } else if (block.start >= UPPER_BOUND && block.end > UPPER_BOUND) {
                             // block is after bounds
+                            console.log('after bounds')
+                            block.start -= ONE_WEEK
+                            block.end -= ONE_WEEK
+                            bounded.push(block)
                           } else if (block.start < LOWER_BOUND && block.end > LOWER_BOUND) {
                             // block spans lower bounds
+                            console.log('spans lower')
+                            newBlock = {'start': (block.start + ONE_WEEK), 'end': UPPER_BOUND}
+                            block.start = LOWER_BOUND
+                            bounded.push(block, newBlock)
                           } else if (block.start < UPPER_BOUND && block.end > UPPER_BOUND) {
                             // block spans upper bounds
+                            console.log('spans upper')
+                            newBlock = {'start': LOWER_BOUND, 'end': (block.end - ONE_WEEK)}
+                            block.end = UPPER_BOUND
+                            bounded.push(block, newBlock)
                           }
                         }
 
