@@ -26,11 +26,21 @@ export const AvailabilitySelector = ({ path }) => {
     if (hour == 24) {
       day ++
     }
-    return setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
+    const newTime = setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
+    if (newTime < DEFAULT_DATE) {
+      return add(newTime, { 'days': 7 })
+    } else if (newTime > add(DEFAULT_DATE, { 'days': 7 })) {
+      return add(newTime, { 'days': -7 })
+    } else {
+      return newTime
+    }
   }
 
   const flatSortMerge = (rows) => {
     const flatSort = rows.flat().sort((a, b) => a.start - b.start)
+    if (flatSort.length == 0) {
+      return flatSort
+    }
     const merged = [flatSort[0]]
 
     for (let i = 1; i< flatSort.length; i++) {
@@ -88,6 +98,8 @@ export const AvailabilitySelector = ({ path }) => {
     setValue(flatSortMerge(newRows))
     editModalRef.current.close()
   }
+
+  console.log(value)
 
   const rows = Array(7).fill().map(() => [])
   for (let block of value) {

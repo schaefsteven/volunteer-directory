@@ -99,21 +99,15 @@ export const Listings: CollectionConfig = {
                     // before saving to db
                     beforeValidate: [
                       ({ value }) => {
-                        // value should already be flattened, sorted, and merged, but in case something goes wrong on the client, we do it again here.
-                        const flatSort = value.flat().sort((a, b) => a.start - b.start)
-                        const merged = [flatSort[0]]
-                        for (let i = 1; i< flatSort.length; i++) {
-                          const current = flatSort[i]
-                          const lastMerged = merged[merged.length-1]
-                          if (areIntervalsOverlapping(lastMerged, current, {inclusive : true})) {
-                            lastMerged.end = current.end
-                          } else {
-                            merged.push(current)
-                          }
+                        // value should already be flattened, but in case something goes wrong on the client, we do it again here.
+                        const flattened = value.flat()
+
+                        if (flattened.length == 0) {
+                          return flattened
                         }
 
                         // convert to unix timestamps
-                        for (let block of merged) {
+                        for (let block of flattened) {
                           block.start = getUnixTime(block.start)
                           block.end = getUnixTime(block.end)
                         }
@@ -127,7 +121,7 @@ export const Listings: CollectionConfig = {
                         UPPER_BOUND += 43200
 
                         const bounded = []
-                        for (let block of merged) {
+                        for (let block of flattened) {
                           // we will assume that block cannot span both the lower and upper bounds because there's no way to create one that long
                           if (block.start >= LOWER_BOUND && block.end <= UPPER_BOUND) {
                             // block is in bounds
@@ -159,7 +153,26 @@ export const Listings: CollectionConfig = {
                           }
                         }
 
-                        return bounded
+                        // sort
+                        const sorted = bounded.sort((a, b) => a - b)
+
+                        console.log(sorted)
+
+                        // merge
+                        const merged = [sorted[0]]
+                        for (let i = 1; i < sorted.length; i++) {
+                          const current = sorted[i]
+                          const lastMerged = merged[merged.length-1]
+                          if (current.start <= lastMerged.end) {
+                            lastMerged.end = current.end
+                          } else {
+                            merged.push(current)
+                          }
+                        }
+
+                        console.log(merged)
+
+                        return merged
                       }
                     ], 
                     // when reading from the db to the admin panel
