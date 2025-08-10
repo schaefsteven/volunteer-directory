@@ -5,6 +5,7 @@ import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
 import { add, interval, setHours, setDay, setMinutes, getDay, format, areIntervalsOverlapping } from "date-fns"
+import { tz } from "@date-fns/tz"
 import { DEFAULT_DATE } from '@/constants'
 
 //todo:
@@ -13,8 +14,12 @@ import { DEFAULT_DATE } from '@/constants'
 //timezone selector
 
 const TIME_FORMAT = 'h:mm aaa'
+const TZ = tz('America/Los_Angeles')
 
 export const AvailabilitySelector = ({ path }) => {
+
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  console.log(timeZone)
 
   const { value = [], setValue } = useField({ path })
 
@@ -185,9 +190,9 @@ const TimeBlock = ({start, end, day, handleEditButton, index}) => {
     <div 
       className={cn(styles.avsel_time_block)}
     >
-      <span>{format(start, TIME_FORMAT)}</span>
+      <span>{format(start, TIME_FORMAT, {in: TZ})}</span>
       <span>-</span>
-      <span>{format(end, TIME_FORMAT)}</span>
+      <span>{format(end, TIME_FORMAT, {in: TZ})}</span>
       <div 
         role="button"
         onClick={() => handleEditButton(day, index)}
