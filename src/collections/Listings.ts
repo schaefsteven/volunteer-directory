@@ -100,7 +100,7 @@ export const Listings: CollectionConfig = {
                     beforeValidate: [
                       ({ value }) => {
                         // value should already be flattened, but in case something goes wrong on the client, we do it again here.
-                        const flattened = value.flat()
+                        const flattened = value.timeBlocks.flat()
 
                         if (flattened.length == 0) {
                           return flattened
@@ -156,8 +156,6 @@ export const Listings: CollectionConfig = {
                         // sort
                         const sorted = bounded.sort((a, b) => a - b)
 
-                        console.log(sorted)
-
                         // merge
                         const merged = [sorted[0]]
                         for (let i = 1; i < sorted.length; i++) {
@@ -170,18 +168,30 @@ export const Listings: CollectionConfig = {
                           }
                         }
 
-                        console.log(merged)
-
-                        return merged
+                        return {
+                          'timeZone': value.timeZone,
+                          'timeBlocks': merged
+                        }
                       }
                     ], 
                     // when reading from the db to the admin panel
                     afterRead: [
                       ({ value }) => {
-                        return value.map((block) => interval(
-                          fromUnixTime(block.start),
-                          fromUnixTime(block.end)
-                        ))
+                        if (!value.timeZone) {
+                          return {
+                            'timeBlocks': [],
+                            'timeZone': ""
+                          }
+                        } else {
+                          const newBlocks = value.timeBlocks.map((block) => interval(
+                            fromUnixTime(block.start),
+                            fromUnixTime(block.end)
+                          ))
+                          return {
+                            'timeBlocks': newBlocks,
+                            'timeZone': value.timeZone
+                          }
+                        }
                       }
                     ]
                 }

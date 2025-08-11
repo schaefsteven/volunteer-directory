@@ -14,19 +14,18 @@ import { DEFAULT_DATE } from '@/constants'
 //timezone selector
 
 const TIME_FORMAT = 'h:mm aaa'
-const TZ = tz('America/Los_Angeles')
+const TIMEZONE_LIST = Intl.supportedValuesOf('timeZone')
+const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const AvailabilitySelector = ({ path }) => {
 
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  console.log(timeZone)
-
-  const { value = [], setValue } = useField({ path })
-
+  // set up states etc
+  const { value = { 'timeBlocks': [], 'timeZone': null }, setValue } = useField({ path })
+  const [timeZone, setTimeZone] = useState( value.timeZone || DEVICE_TIMEZONE )
+  const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
-  const [editContext, setEditContext] = useState(null)
-
+  // helpers
   const createTime = (day, hour = 0, minute = 0) => {
     if (hour == 24) {
       day ++
@@ -61,6 +60,14 @@ export const AvailabilitySelector = ({ path }) => {
     return merged
   }
 
+  const attachTz = (timeBlocks) => {
+    return {
+      'timeBlocks': timeBlocks, 
+      'timeZone': timeZone
+    }
+  }
+
+  // handlers
   const handleAddButton = (day) => {
     setEditContext({'day': day, 'mode': 'add'})
     editModalRef.current.showModal()
@@ -81,7 +88,7 @@ export const AvailabilitySelector = ({ path }) => {
   const handleDeleteButton = (day, index) => {
     const newRows = [...rows]
     newRows[day].splice(index, 1)
-    setValue(flatSortMerge(newRows))
+    setValue(attachTz(flatSortMerge(newRows)))
     editModalRef.current.close()
   }
 
@@ -100,14 +107,17 @@ export const AvailabilitySelector = ({ path }) => {
     } else {
       newRows[editContext.day].push(newBlock)
     }
-    setValue(flatSortMerge(newRows))
+    setValue(attachTz(flatSortMerge(newRows)))
     editModalRef.current.close()
   }
 
-  console.log(value)
+  const handleTimezoneChange = (e) => {
+    setTimeZone(e.target.value)
+  }
+
 
   const rows = Array(7).fill().map(() => [])
-  for (let block of value) {
+  for (let block of value?.timeBlocks) {
     // split blocks that span midnight and add them to the rows array
     const startDay = getDay(block.start)
     const endDay = getDay(add(block.end, {minutes: -1}))
@@ -131,6 +141,23 @@ export const AvailabilitySelector = ({ path }) => {
 
   return (
     <div>
+      <label 
+        htmlFor="timezone-select"
+      >
+        Select Timezone: 
+      </label>
+      <select
+        id="timezone-select"
+        value={timeZone}
+        onChange={handleTimezoneChange}
+      >
+        {TIMEZONE_LIST.map((tz) => (
+          <option key={tz} value={tz}>
+            {tz}
+          </option>
+        ))}
+      </select>
+      {(timeZone != DEVICE_TIMEZONE) && <span>This is not your device's current timezone.</span>}
       {rows.map((timeBlocks, day) => (
         <Row
           key={day}
@@ -138,6 +165,7 @@ export const AvailabilitySelector = ({ path }) => {
           timeBlocks={timeBlocks}
           handleAddButton={handleAddButton}
           handleEditButton={handleEditButton}
+          timeZone={timeZone}
         />
       ))}
       {
@@ -153,7 +181,7 @@ export const AvailabilitySelector = ({ path }) => {
   )
 }
 
-const Row = ({day, timeBlocks, handleAddButton, handleEditButton}) => {
+const Row = ({day, timeBlocks, handleAddButton, handleEditButton, timeZone}) => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
   return (
@@ -177,6 +205,7 @@ const Row = ({day, timeBlocks, handleAddButton, handleEditButton}) => {
               index={index}
               day={day}
               handleEditButton={handleEditButton}
+              timeZone={timeZone}
             />
           )
         }
@@ -185,14 +214,15 @@ const Row = ({day, timeBlocks, handleAddButton, handleEditButton}) => {
   )
 }
 
-const TimeBlock = ({start, end, day, handleEditButton, index}) => {
+const TimeBlock = ({start, end, day, handleEditButton, index, timeZone}) => {
+  const formatOpt = { in: tz(timeZone) }
   return (
     <div 
       className={cn(styles.avsel_time_block)}
     >
-      <span>{format(start, TIME_FORMAT, {in: TZ})}</span>
+      <span>{format(start, TIME_FORMAT, formatOpt )}</span>
       <span>-</span>
-      <span>{format(end, TIME_FORMAT, {in: TZ})}</span>
+      <span>{format(end, TIME_FORMAT, formatOpt )}</span>
       <div 
         role="button"
         onClick={() => handleEditButton(day, index)}
