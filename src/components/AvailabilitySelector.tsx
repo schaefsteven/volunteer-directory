@@ -5,16 +5,23 @@ import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
 import { add, interval, setHours, setDay, setMinutes, getDay, format, areIntervalsOverlapping } from "date-fns"
-import { tz } from "@date-fns/tz"
+import { tz, tzOffset } from "@date-fns/tz"
+import { utc } from "@date-fns/utc"
 import { DEFAULT_DATE } from '@/constants'
+import { getTimeZones, rawTimeZones } from '@vvo/tzdb'
 
 //todo:
 //chrono-node for time parsing
 //handle weekend wrapping
 //timezone selector
+//
+//
+//Structure: 
+//value.timeBlocks: UTC SDT, normalized/bounded
+//rows: UTC SDT
 
 const TIME_FORMAT = 'h:mm aaa'
-const TIMEZONE_LIST = Intl.supportedValuesOf('timeZone')
+const TIMEZONE_LIST = rawTimeZones.map((tz) => tz.name)
 const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const AvailabilitySelector = ({ path }) => {
@@ -22,22 +29,32 @@ export const AvailabilitySelector = ({ path }) => {
   // set up states etc
   const { value = { 'timeBlocks': [], 'timeZone': null }, setValue } = useField({ path })
   const [timeZone, setTimeZone] = useState( value.timeZone || DEVICE_TIMEZONE )
+  const timeZoneInfo = getTimeZones().find(tz => tz.name === timeZone)
+  const utcOffset = timeZoneInfo.rawOffsetInMinutes
+  const dstOffset = -utcOffset + timeZoneInfo.currentTimeOffsetInMinutes
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
+  console.log("UTC Offset: ", utcOffset)
+  console.log("DST Offset: ", dstOffset)
+
   // helpers
   const createTime = (day, hour = 0, minute = 0) => {
-    if (hour == 24) {
-      day ++
-    }
-    const newTime = setDay(setHours(setMinutes(DEFAULT_DATE, minute), hour), day)
-    if (newTime < DEFAULT_DATE) {
-      return add(newTime, { 'days': 7 })
-    } else if (newTime > add(DEFAULT_DATE, { 'days': 7 })) {
-      return add(newTime, { 'days': -7 })
-    } else {
-      return newTime
-    }
+    // creates a date in UTC, SDT
+    const newTime = add(DEFAULT_DATE, {
+      'days': day,
+      'hours': hour, 
+      'minutes': minute - utcOffset + dstOffset
+    })
+    return newTime
+  }
+
+  const applyDstOffset = (time) => {
+    return add(time, { 'minutes': dstOffset })
+  }
+
+  const uiTimeFormat = (time) => {
+    return format(applyDstOffset(time), 'h:mm aaa', { in: tz(timeZone) })
   }
 
   const flatSortMerge = (rows) => {
@@ -119,8 +136,10 @@ export const AvailabilitySelector = ({ path }) => {
   const rows = Array(7).fill().map(() => [])
   for (let block of value?.timeBlocks) {
     // split blocks that span midnight and add them to the rows array
-    const startDay = getDay(block.start)
-    const endDay = getDay(add(block.end, {minutes: -1}))
+    const correctedStart = applyDstOffset(block.start)
+    const correctedEnd = applyDstOffset(block.end)
+    const startDay = getDay(correctedStart, { in: tz(timeZone) })
+    const endDay = getDay(add(correctedEnd, {minutes: -1}), { in: tz(timeZone) })
     const numOfBlocks = endDay - startDay + 1
     let startTime
     let endTime
@@ -165,7 +184,7 @@ export const AvailabilitySelector = ({ path }) => {
           timeBlocks={timeBlocks}
           handleAddButton={handleAddButton}
           handleEditButton={handleEditButton}
-          timeZone={timeZone}
+          uiTimeFormat={uiTimeFormat}
         />
       ))}
       {
@@ -181,7 +200,7 @@ export const AvailabilitySelector = ({ path }) => {
   )
 }
 
-const Row = ({day, timeBlocks, handleAddButton, handleEditButton, timeZone}) => {
+const Row = ({day, timeBlocks, handleAddButton, handleEditButton, uiTimeFormat}) => {
   const labels = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
   return (
@@ -205,7 +224,7 @@ const Row = ({day, timeBlocks, handleAddButton, handleEditButton, timeZone}) => 
               index={index}
               day={day}
               handleEditButton={handleEditButton}
-              timeZone={timeZone}
+              uiTimeFormat={uiTimeFormat}
             />
           )
         }
@@ -214,15 +233,14 @@ const Row = ({day, timeBlocks, handleAddButton, handleEditButton, timeZone}) => 
   )
 }
 
-const TimeBlock = ({start, end, day, handleEditButton, index, timeZone}) => {
-  const formatOpt = { in: tz(timeZone) }
+const TimeBlock = ({start, end, day, handleEditButton, index, uiTimeFormat}) => {
   return (
     <div 
       className={cn(styles.avsel_time_block)}
     >
-      <span>{format(start, TIME_FORMAT, formatOpt )}</span>
+      <span>{uiTimeFormat(start)}</span>
       <span>-</span>
-      <span>{format(end, TIME_FORMAT, formatOpt )}</span>
+      <span>{uiTimeFormat(end)}</span>
       <div 
         role="button"
         onClick={() => handleEditButton(day, index)}

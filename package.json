@@ -10,10 +10,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@date-fns/utc": "^2.1.1",
     "@payloadcms/db-mongodb": "^3.28.1",
     "@payloadcms/next": "^3.28.1",
     "@payloadcms/payload-cloud": "^3.28.1",
     "@payloadcms/richtext-lexical": "^3.28.1",
+    "@vvo/tzdb": "^6.183.0",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "graphql": "^16.10.0",

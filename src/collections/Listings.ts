@@ -111,6 +111,8 @@ export const Listings: CollectionConfig = {
                           block.start = getUnixTime(block.start)
                           block.end = getUnixTime(block.end)
                         }
+
+                        const shim = [...flattened]
                         
                         // deal with ends
                         let LOWER_BOUND = 882000
@@ -170,7 +172,7 @@ export const Listings: CollectionConfig = {
 
                         return {
                           'timeZone': value.timeZone,
-                          'timeBlocks': merged
+                          'timeBlocks': shim
                         }
                       }
                     ], 
@@ -180,7 +182,7 @@ export const Listings: CollectionConfig = {
                         if (!value.timeZone) {
                           return {
                             'timeBlocks': [],
-                            'timeZone': ""
+                            'timeZone': null
                           }
                         } else {
                           const newBlocks = value.timeBlocks.map((block) => interval(
