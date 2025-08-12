@@ -97,85 +97,7 @@ export const Listings: CollectionConfig = {
                 },
                 hooks: {
                     // before saving to db
-                    beforeValidate: [
-                      ({ value }) => {
-                        // value should already be flattened, but in case something goes wrong on the client, we do it again here.
-                        const flattened = value.timeBlocks.flat()
-
-                        if (flattened.length == 0) {
-                          return flattened
-                        }
-
-                        // convert to unix timestamps
-                        for (let block of flattened) {
-                          block.start = getUnixTime(block.start)
-                          block.end = getUnixTime(block.end)
-                        }
-
-                        const shim = [...flattened]
-                        
-                        // deal with ends
-                        let LOWER_BOUND = 882000
-                        let UPPER_BOUND = 1486800
-                        const ONE_WEEK = 604800
-                        
-                        LOWER_BOUND += 43200
-                        UPPER_BOUND += 43200
-
-                        const bounded = []
-                        for (let block of flattened) {
-                          // we will assume that block cannot span both the lower and upper bounds because there's no way to create one that long
-                          if (block.start >= LOWER_BOUND && block.end <= UPPER_BOUND) {
-                            // block is in bounds
-                            bounded.push(block)
-                          } else if (block.start < LOWER_BOUND && block.end <= LOWER_BOUND) {
-                            // block is before bounds
-                            console.log('before bounds')
-                            block.start += ONE_WEEK
-                            block.end += ONE_WEEK
-                            bounded.push(block)
-                          } else if (block.start >= UPPER_BOUND && block.end > UPPER_BOUND) {
-                            // block is after bounds
-                            console.log('after bounds')
-                            block.start -= ONE_WEEK
-                            block.end -= ONE_WEEK
-                            bounded.push(block)
-                          } else if (block.start < LOWER_BOUND && block.end > LOWER_BOUND) {
-                            // block spans lower bounds
-                            console.log('spans lower')
-                            newBlock = {'start': (block.start + ONE_WEEK), 'end': UPPER_BOUND}
-                            block.start = LOWER_BOUND
-                            bounded.push(block, newBlock)
-                          } else if (block.start < UPPER_BOUND && block.end > UPPER_BOUND) {
-                            // block spans upper bounds
-                            console.log('spans upper')
-                            newBlock = {'start': LOWER_BOUND, 'end': (block.end - ONE_WEEK)}
-                            block.end = UPPER_BOUND
-                            bounded.push(block, newBlock)
-                          }
-                        }
-
-                        // sort
-                        const sorted = bounded.sort((a, b) => a - b)
-
-                        // merge
-                        const merged = [sorted[0]]
-                        for (let i = 1; i < sorted.length; i++) {
-                          const current = sorted[i]
-                          const lastMerged = merged[merged.length-1]
-                          if (current.start <= lastMerged.end) {
-                            lastMerged.end = current.end
-                          } else {
-                            merged.push(current)
-                          }
-                        }
-
-                        return {
-                          'timeZone': value.timeZone,
-                          'timeBlocks': shim
-                        }
-                      }
-                    ], 
+                    // beforeValidate: [], 
                     // when reading from the db to the admin panel
                     afterRead: [
                       ({ value }) => {
@@ -185,14 +107,7 @@ export const Listings: CollectionConfig = {
                             'timeZone': null
                           }
                         } else {
-                          const newBlocks = value.timeBlocks.map((block) => interval(
-                            fromUnixTime(block.start),
-                            fromUnixTime(block.end)
-                          ))
-                          return {
-                            'timeBlocks': newBlocks,
-                            'timeZone': value.timeZone
-                          }
+                          return value
                         }
                       }
                     ]
