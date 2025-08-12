@@ -4,12 +4,12 @@ import { useState, useRef, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
-import { format } from "date-fns"
+import { format, parse } from "date-fns"
 import { UTCDateMini, utc } from "@date-fns/utc"
 import { rawTimeZones } from '@vvo/tzdb'
 
 //todo:
-//chrono-node for time parsing
+//time parsing: midnight cases
 //timezone selector cleanup
 
 const TIMEZONE_LIST = rawTimeZones.map((tz) => tz.name)
@@ -39,12 +39,52 @@ export const AvailabilitySelector = ({ path }) => {
     return (block1.start <= block2.end && block1.end >= block2.start)
   }
 
+  const parseTime = (string, endMode = false) => {
+    const ogString = string
+    const formats = [
+      'HH',        // 0
+      'kk',        // 1-24
+      'HHmm',      // 0115
+      'hhaaaaa',   // 01p
+      'hhmmaaaaa', // 0115p
+    ]
+
+    // keep only numbers and a p
+    string = string.replace(/[^0-9apAP]/g, '')
+    string = string.toLowerCase()
+    // check how many digits we have. If it's 3, pad to 4,
+    if (string.replace(/[^0-9]/g, '').length == 3) {
+      string = '0' + string
+    }
+    const refDate = new UTCDateMini(1970)
+    for (const fmt of formats) {
+      try {
+        const date = parse(string, fmt, refDate)
+        if (!isNaN(date)) {
+          const hours = parseInt(format(date, 'H', {in: utc}))
+          const minutes = parseInt(format(date, 'm', {in: utc}))
+          if (endMode) {
+            // if we're parsing an 'end' time, midnight should be 24 not 0
+            if (hours + minutes === 0) {
+              return 24 * 60
+            }
+          }
+          return (hours*60) + minutes
+        }
+      } catch (e) {}
+    }
+    return null
+  }
+
   const rowsToValue = (rows) => {
     // flatten and sort
     const flatSort = rows.flat().sort((a, b) => a.start - b.start)
     if (flatSort.length == 0) {
       // return here if array is empty
-      return flatSort
+      return {
+        'timeBlocks': flatSort, 
+        'timeZone': timeZone
+      }
     }
     // merge overlapping timeBlocks
     const merged = [flatSort[0]]
@@ -95,9 +135,20 @@ export const AvailabilitySelector = ({ path }) => {
   const handleSaveButton = (start, end) => {
     // keep the rows structure so we can use the editContext
     const newRows = [...rows]
+    const startInput = parseTime(start)
+    const endInput = parseTime(end, true)
+    // check if we parsed the inputs
+    if (startInput == null || endInput == null) {
+      return 'Could not parse time.'
+    }
+    start = createTime(editContext.day, 0, startInput)
+    end = createTime(editContext.day, 0, endInput)
+    if (startInput > endInput) {
+      return 'Start time must be before end time.'
+    }
     const newBlock = {
-      'start': createTime(editContext.day, parseInt(start), 0),
-      'end': createTime(editContext.day, parseInt(end), 0)
+      'start': start,
+      'end': end
     }
     if (editContext.mode == 'edit') {
       newRows[editContext.day][editContext.index] = newBlock
@@ -105,7 +156,7 @@ export const AvailabilitySelector = ({ path }) => {
       newRows[editContext.day].push(newBlock)
     }
     setValue(rowsToValue(newRows))
-    editModalRef.current.close()
+    return null
   }
 
   const handleTimezoneChange = (e) => {
@@ -234,6 +285,8 @@ const TimeBlock = ({start, end, day, handleEditButton, index, uiTimeFormat}) => 
 const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, editContext, editModalRef, uiTimeFormat }) => {
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [error, setError] = useState(null)
+  const startInputRef = useRef(null)
 
   useEffect(() => {
     if (editContext?.block) {
@@ -243,7 +296,27 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
       setStartTime('')
       setEndTime('')
     }
+    setError('')
+    // focus the start input when the modal opens
+    startInputRef.current?.focus()
   }, [editContext])
+
+  const handleSaveButtonWrapper = (startTime, endTime) => {
+    setError('')
+    const error = handleSaveButton(startTime, endTime)
+    if (error) {
+      setError(error)
+    } else {
+      editModalRef.current.close()
+    }
+  }
+
+  const onEnter = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSaveButtonWrapper(startTime, endTime)
+    }
+  }
 
   return (
     <>
@@ -268,16 +341,22 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
               type="text"
               placeholder="Start"
               value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
+              onChange={(e) => {setStartTime(e.target.value); setError('')}}
+              onKeyDown={onEnter}
+              ref={startInputRef}
             />
             <span>-</span>
             <input
               type="text"
               placeholder="End"
               value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
+              onChange={(e) => {setEndTime(e.target.value); setError('')}}
+              onKeyDown={onEnter}
             />
           </main>
+          <div>
+            <span>{error}</span>
+          </div>
           <footer>
             <button
               onClick={() => handleDeleteButton(editContext.day, editContext.index)}
@@ -292,7 +371,7 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
               Cancel
             </button>
             <button
-              onClick={() => handleSaveButton(startTime, endTime)}
+              onClick={() => handleSaveButtonWrapper(startTime, endTime)}
               type="button"
             >
               Save

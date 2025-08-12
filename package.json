@@ -16,6 +16,7 @@
     "@payloadcms/payload-cloud": "^3.28.1",
     "@payloadcms/richtext-lexical": "^3.28.1",
     "@vvo/tzdb": "^6.183.0",
+    "chrono-node": "^2.8.4",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "graphql": "^16.10.0",
