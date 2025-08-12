@@ -5,30 +5,13 @@ import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
 import cn from 'classnames'
 import { format } from "date-fns"
-// import { tz, tzOffset } from "@date-fns/tz"
 import { UTCDateMini, utc } from "@date-fns/utc"
-// import { DEFAULT_DATE } from '@/constants'
-import { getTimeZones, rawTimeZones } from '@vvo/tzdb'
+import { rawTimeZones } from '@vvo/tzdb'
 
 //todo:
 //chrono-node for time parsing
-//handle weekend wrapping
-//timezone selector
-//
-//
-//Structure: 
-//value.timeBlocks: UTC SDT, normalized/bounded
-//rows: UTC SDT
-//
-// FUCK Date objects. we're moving to minutes of the week + timezones
-//
-//UTC + utcOffset + dstOffset = LT; LT - utcOffset - dstOffset = UTC
-//
-//
-const WEEK = 10080
-const DAY = 1440
+//timezone selector cleanup
 
-const TIME_FORMAT = 'h:mm aaa'
 const TIMEZONE_LIST = rawTimeZones.map((tz) => tz.name)
 const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -37,11 +20,8 @@ export const AvailabilitySelector = ({ path }) => {
   // set up states etc
   const { value = { 'timeBlocks': [], 'timeZone': null }, setValue } = useField({ path })
   const [timeZone, setTimeZone] = useState( value.timeZone || DEVICE_TIMEZONE )
-  const timeZoneInfo = getTimeZones().find(tz => tz.name === timeZone)
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
-
-  console.log(value)
 
   // helpers
   const createTime = (day, hour = 0, minute = 0) => {
@@ -193,6 +173,7 @@ export const AvailabilitySelector = ({ path }) => {
           handleSaveButton={handleSaveButton}
           editContext={editContext}
           editModalRef={editModalRef}
+          uiTimeFormat={uiTimeFormat}
         />
       }
     </div>
@@ -250,14 +231,14 @@ const TimeBlock = ({start, end, day, handleEditButton, index, uiTimeFormat}) => 
   )
 }
 
-const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, editContext, editModalRef }) => {
+const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, editContext, editModalRef, uiTimeFormat }) => {
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
 
   useEffect(() => {
     if (editContext?.block) {
-      setStartTime(format(editContext.block.start, TIME_FORMAT))
-      setEndTime(format(editContext.block.end, TIME_FORMAT))
+      setStartTime(uiTimeFormat(editContext.block.start))
+      setEndTime(uiTimeFormat(editContext.block.end))
     } else {
       setStartTime('')
       setEndTime('')
