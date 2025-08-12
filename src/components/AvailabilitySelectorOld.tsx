@@ -19,9 +19,6 @@ import { getTimeZones, rawTimeZones } from '@vvo/tzdb'
 //Structure: 
 //value.timeBlocks: UTC SDT, normalized/bounded
 //rows: UTC SDT
-//
-//
-//UTC + utcOffset + dstOffset = LT; LT - utcOffset - dstOffset = UTC
 
 const TIME_FORMAT = 'h:mm aaa'
 const TIMEZONE_LIST = rawTimeZones.map((tz) => tz.name)
@@ -38,43 +35,39 @@ export const AvailabilitySelector = ({ path }) => {
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
-  console.log(utcOffset)
-  console.log(dstOffset)
-  console.log(value)
+  console.log("UTC Offset: ", utcOffset)
+  console.log("DST Offset: ", dstOffset)
 
   // helpers
   const createTime = (day, hour = 0, minute = 0) => {
-    // takes input in Local Time and converts it to a UTC Standard Time time
+    // creates a date in UTC, SDT
     const newTime = add(DEFAULT_DATE, {
       'days': day,
       'hours': hour, 
-      'minutes': minute - utcOffset
+      'minutes': minute - utcOffset + dstOffset
     })
     return newTime
   }
 
-  const addDstOffset = (time) => {
-    // adds the DST offset to the time, used for comverting UTC to LT
+  const applyDstOffset = (time) => {
     return add(time, { 'minutes': dstOffset })
   }
 
   const uiTimeFormat = (time) => {
-    // takes a UTC timestamp, and formats it in LT
-    return format(time, 'h:mm aaa', { in: tz(timeZone) })
+    return format(applyDstOffset(time), 'h:mm aaa', { in: tz(timeZone) })
   }
 
   const flatSortMerge = (rows) => {
-    // flatten and sort
     const flatSort = rows.flat().sort((a, b) => a.start - b.start)
     if (flatSort.length == 0) {
-      // return here if array is empty
       return flatSort
     }
-    // merge overlapping timeBlocks
     const merged = [flatSort[0]]
+
     for (let i = 1; i< flatSort.length; i++) {
       const current = flatSort[i]
       const lastMerged = merged[merged.length-1]
+
       if (areIntervalsOverlapping(lastMerged, current, {inclusive : true})) {
         lastMerged.end = current.end
       } else {
@@ -121,11 +114,8 @@ export const AvailabilitySelector = ({ path }) => {
   }
  
   const handleSaveButton = (start, end) => {
-    // keep the rows structure so we can use the editContext
     const newRows = [...rows]
     const newBlock = interval (
-      // TODO: IS THIS RIGHT????
-      // THIS AND THE createTime function are probably where the problems reside
       createTime(editContext.day, parseInt(start), 0),
       createTime(editContext.day, parseInt(end), 0)
     )
@@ -146,8 +136,8 @@ export const AvailabilitySelector = ({ path }) => {
   const rows = Array(7).fill().map(() => [])
   for (let block of value?.timeBlocks) {
     // split blocks that span midnight and add them to the rows array
-    const correctedStart = addDstOffset(block.start)
-    const correctedEnd = addDstOffset(block.end)
+    const correctedStart = applyDstOffset(block.start)
+    const correctedEnd = applyDstOffset(block.end)
     const startDay = getDay(correctedStart, { in: tz(timeZone) })
     const endDay = getDay(add(correctedEnd, {minutes: -1}), { in: tz(timeZone) })
     const numOfBlocks = endDay - startDay + 1
@@ -248,9 +238,9 @@ const TimeBlock = ({start, end, day, handleEditButton, index, uiTimeFormat}) => 
     <div 
       className={cn(styles.avsel_time_block)}
     >
-      <span>{uiTimeFormat(start)} utc:{format(start, 'h:mm aaa', { in: utc })}</span>
+      <span>{uiTimeFormat(start)}</span>
       <span>-</span>
-      <span>{uiTimeFormat(end)} utc:{format(end, 'h:mm aaa', { in: utc })}</span>
+      <span>{uiTimeFormat(end)}</span>
       <div 
         role="button"
         onClick={() => handleEditButton(day, index)}
