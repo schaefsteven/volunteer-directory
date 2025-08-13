@@ -8,11 +8,19 @@ import { format, parse } from "date-fns"
 import { UTCDateMini, utc } from "@date-fns/utc"
 import { rawTimeZones } from '@vvo/tzdb'
 
-//todo:
-//time parsing: midnight cases
-//timezone selector cleanup
+const formatOffset = (offset) => {
+  const sign = offset < 0 ? '-' : '+'
+  const hours = Math.abs(Math.floor(offset / 60))
+  const minutes = String(Math.abs(offset % 60)).padStart(2, '0')
+  return sign + hours + ':' + minutes
+}
 
-const TIMEZONE_LIST = rawTimeZones.map((tz) => tz.name)
+const TIMEZONE_LIST = rawTimeZones.sort(
+  (a, b) => a.rawOffsetInMinutes - b.rawOffsetInMinutes).map(
+  (tz) => ({
+    'name': tz.name,
+    'label': tz.alternativeName + ' (' + tz.name + ') UTC' + formatOffset(tz.rawOffsetInMinutes)
+  }))
 const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const AvailabilitySelector = ({ path }) => {
@@ -23,6 +31,7 @@ export const AvailabilitySelector = ({ path }) => {
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
+  console.log(value)
   // helpers
   const createTime = (day, hour = 0, minute = 0) => {
     // returns minutes of the week from day, hour, minute
@@ -161,6 +170,10 @@ export const AvailabilitySelector = ({ path }) => {
 
   const handleTimezoneChange = (e) => {
     setTimeZone(e.target.value)
+    setValue({
+      ...value,
+      timeZone: e.target.value
+    })
   }
 
   const getDay = (minutesOfWeek) => Math.floor(minutesOfWeek / 1440)
@@ -201,8 +214,8 @@ export const AvailabilitySelector = ({ path }) => {
         onChange={handleTimezoneChange}
       >
         {TIMEZONE_LIST.map((tz) => (
-          <option key={tz} value={tz}>
-            {tz}
+          <option key={tz.name} value={tz.name}>
+            {tz.label}
           </option>
         ))}
       </select>
