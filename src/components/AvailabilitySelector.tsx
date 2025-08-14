@@ -1,5 +1,5 @@
 'use client' 
-import React from 'react'
+//import React from 'react'
 import { useState, useRef, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 import styles from './Test.module.css'
@@ -7,6 +7,7 @@ import cn from 'classnames'
 import { format, parse } from "date-fns"
 import { UTCDateMini, utc } from "@date-fns/utc"
 import { rawTimeZones } from '@vvo/tzdb'
+import { Select } from '@payloadcms/ui'
 
 const formatOffset = (offset) => {
   const sign = offset < 0 ? '-' : '+'
@@ -18,20 +19,20 @@ const formatOffset = (offset) => {
 const TIMEZONE_LIST = rawTimeZones.sort(
   (a, b) => a.rawOffsetInMinutes - b.rawOffsetInMinutes).map(
   (tz) => ({
-    'name': tz.name,
-    'label': tz.alternativeName + ' (' + tz.name + ') UTC' + formatOffset(tz.rawOffsetInMinutes)
+    'value': tz.name,
+    'label': tz.alternativeName + ' (' + tz.name.replace(/_/, ' ') + ') UTC' + formatOffset(tz.rawOffsetInMinutes)
   }))
+
 const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const AvailabilitySelector = ({ path }) => {
 
   // set up states etc
-  const { value = { 'timeBlocks': [], 'timeZone': null }, setValue } = useField({ path })
-  const [timeZone, setTimeZone] = useState( value.timeZone || DEVICE_TIMEZONE )
+  const { value = { 'timeBlocks': [], 'timeZone': DEVICE_TIMEZONE }, setValue } = useField({ path })
+  // const [timeZone, setTimeZone] = useState( value.timeZone || DEVICE_TIMEZONE )
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
-  console.log(value)
   // helpers
   const createTime = (day, hour = 0, minute = 0) => {
     // returns minutes of the week from day, hour, minute
@@ -92,7 +93,7 @@ export const AvailabilitySelector = ({ path }) => {
       // return here if array is empty
       return {
         'timeBlocks': flatSort, 
-        'timeZone': timeZone
+        'timeZone': value.timeZone
       }
     }
     // merge overlapping timeBlocks
@@ -108,7 +109,7 @@ export const AvailabilitySelector = ({ path }) => {
     }
     return {
       'timeBlocks': merged, 
-      'timeZone': timeZone
+      'timeZone': value.timeZone
     }
   }
 
@@ -169,10 +170,9 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const handleTimezoneChange = (e) => {
-    setTimeZone(e.target.value)
     setValue({
       ...value,
-      timeZone: e.target.value
+      timeZone: e.value
     })
   }
 
@@ -206,40 +206,35 @@ export const AvailabilitySelector = ({ path }) => {
       <label 
         htmlFor="timezone-select"
       >
-        Select Timezone: 
+        Timezone
       </label>
-      <select
+      <Select
         id="timezone-select"
-        value={timeZone}
+        options={TIMEZONE_LIST}
+        value={TIMEZONE_LIST.find(tz => tz.value === value.timeZone)}
         onChange={handleTimezoneChange}
-      >
-        {TIMEZONE_LIST.map((tz) => (
-          <option key={tz.name} value={tz.name}>
-            {tz.label}
-          </option>
+      />
+      {(value.timeZone != DEVICE_TIMEZONE) && <span>This is not your device's current timezone.</span>}
+      <div className={cn(styles.avsel_rows_container)}>
+        {rows.map((timeBlocks, day) => (
+          <Row
+            key={day}
+            day={day}
+            timeBlocks={timeBlocks}
+            handleAddButton={handleAddButton}
+            handleEditButton={handleEditButton}
+            uiTimeFormat={uiTimeFormat}
+          />
         ))}
-      </select>
-      {(timeZone != DEVICE_TIMEZONE) && <span>This is not your device's current timezone.</span>}
-      {rows.map((timeBlocks, day) => (
-        <Row
-          key={day}
-          day={day}
-          timeBlocks={timeBlocks}
-          handleAddButton={handleAddButton}
-          handleEditButton={handleEditButton}
-          uiTimeFormat={uiTimeFormat}
-        />
-      ))}
-      {
-        <EditModal
-          handleDeleteButton={handleDeleteButton}
-          handleCancelButton={handleCancelButton}
-          handleSaveButton={handleSaveButton}
-          editContext={editContext}
-          editModalRef={editModalRef}
-          uiTimeFormat={uiTimeFormat}
-        />
-      }
+      </div>
+      <EditModal
+        handleDeleteButton={handleDeleteButton}
+        handleCancelButton={handleCancelButton}
+        handleSaveButton={handleSaveButton}
+        editContext={editContext}
+        editModalRef={editModalRef}
+        uiTimeFormat={uiTimeFormat}
+      />
     </div>
   )
 }
