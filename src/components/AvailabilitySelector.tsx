@@ -1,13 +1,11 @@
 'use client' 
-//import React from 'react'
 import { useState, useRef, useEffect } from 'react'
-import { useField } from '@payloadcms/ui'
-import styles from './Test.module.css'
+import { useField, Select } from '@payloadcms/ui'
+import styles from './AvailabilitySelector.module.css'
 import cn from 'classnames'
 import { format, parse } from "date-fns"
 import { UTCDateMini, utc } from "@date-fns/utc"
 import { rawTimeZones } from '@vvo/tzdb'
-import { Select } from '@payloadcms/ui'
 
 const formatOffset = (offset) => {
   const sign = offset < 0 ? '-' : '+'
@@ -29,18 +27,17 @@ export const AvailabilitySelector = ({ path }) => {
 
   // set up states etc
   const { value = { 'timeBlocks': [], 'timeZone': DEVICE_TIMEZONE }, setValue } = useField({ path })
-  // const [timeZone, setTimeZone] = useState( value.timeZone || DEVICE_TIMEZONE )
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
-  // helpers
+  // HELPERS
   const createTime = (day, hour = 0, minute = 0) => {
     // returns minutes of the week from day, hour, minute
     return (day * 1440) + (hour * 60) + minute
   }
 
   const uiTimeFormat = (minutesOfWeek) => {
-    // converts hours of the week to a 12-hour time
+    // converts minutes of the week to a 12-hour time
     const minutesOfDay = minutesOfWeek % 1440
     return format(new UTCDateMini(1970, 0, 1, 0, minutesOfDay, 0), 'h:mm aaa', {in: utc})
   }
@@ -50,6 +47,7 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const parseTime = (string, endMode = false) => {
+    // parses user input into minutes of day
     const ogString = string
     const formats = [
       'HH',        // 0
@@ -87,6 +85,7 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const rowsToValue = (rows) => {
+    // converts the 'rows' structure into the 'value' structure
     // flatten and sort
     const flatSort = rows.flat().sort((a, b) => a.start - b.start)
     if (flatSort.length == 0) {
@@ -113,7 +112,7 @@ export const AvailabilitySelector = ({ path }) => {
     }
   }
 
-  // handlers
+  // HANDLERS
   const handleAddButton = (day) => {
     setEditContext({'day': day, 'mode': 'add'})
     editModalRef.current.showModal()
@@ -132,9 +131,12 @@ export const AvailabilitySelector = ({ path }) => {
   }
 
   const handleDeleteButton = (day, index) => {
-    const newRows = [...rows]
-    newRows[day].splice(index, 1)
-    setValue(rowsToValue(newRows))
+    // only setValue if we're editing
+    if (editContext.mode === 'edit') {
+      const newRows = [...rows]
+      newRows[day].splice(index, 1)
+      setValue(rowsToValue(newRows))
+    }
     editModalRef.current.close()
   }
 
@@ -151,6 +153,7 @@ export const AvailabilitySelector = ({ path }) => {
     if (startInput == null || endInput == null) {
       return 'Could not parse time.'
     }
+    // check if interval is positive
     start = createTime(editContext.day, 0, startInput)
     end = createTime(editContext.day, 0, endInput)
     if (startInput > endInput) {
@@ -214,7 +217,14 @@ export const AvailabilitySelector = ({ path }) => {
         value={TIMEZONE_LIST.find(tz => tz.value === value.timeZone)}
         onChange={handleTimezoneChange}
       />
-      {(value.timeZone != DEVICE_TIMEZONE) && <span>This is not your device's current timezone.</span>}
+      {
+        (value.timeZone != DEVICE_TIMEZONE) && 
+        <span 
+          className={cn(styles.alert)}
+        >
+          This is not your device's current timezone.
+        </span>
+      }
       <div className={cn(styles.avsel_rows_container)}>
         {rows.map((timeBlocks, day) => (
           <Row
@@ -344,6 +354,9 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
               x
             </button>
           </header>
+          <div>
+            <span className={cn(styles.error)}>{error}</span>
+          </div>
           <main>
             <input
               type="text"
@@ -362,9 +375,6 @@ const EditModal = ({ handleDeleteButton, handleCancelButton, handleSaveButton, e
               onKeyDown={onEnter}
             />
           </main>
-          <div>
-            <span>{error}</span>
-          </div>
           <footer>
             <button
               onClick={() => handleDeleteButton(editContext.day, editContext.index)}
