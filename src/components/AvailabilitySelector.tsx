@@ -290,12 +290,12 @@ const TimeBlock = ({start, end, day, handleEditButton, index, uiTimeFormat}) => 
       <span>{uiTimeFormat(start)}</span>
       <span>-</span>
       <span>{uiTimeFormat(end)}</span>
-      <div 
-        role="button"
+      <button 
+        type="button"
         onClick={() => handleEditButton(day, index)}
       >
         edit
-      </div>
+      </button>
     </div>
   )
 }
