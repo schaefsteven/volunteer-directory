@@ -53,7 +53,7 @@ export const Listings: CollectionConfig = {
                 type: "checkbox",
                 admin: {
                     condition: (data, sibilingData) => {
-                        return sibilingData.type.some( (el) => ["In-person", "Hybrid"].includes(el) )
+                        return sibilingData.type?.some( (el) => ["In-person", "Hybrid"].includes(el) ) ?? false
                     },
                 },
             },
@@ -62,7 +62,7 @@ export const Listings: CollectionConfig = {
                 type: "number",
                 admin: {
                     condition: (data, sibilingData) => {
-                        return sibilingData.type.some( (el) => ["In-person", "Hybrid"].includes(el) && !sibilingData.anywhere )
+                        return sibilingData.type?.some( (el) => ["In-person", "Hybrid"].includes(el) && !sibilingData.anywhere ) ?? false
                     },
                 },
             },
@@ -94,23 +94,28 @@ export const Listings: CollectionConfig = {
                     components: {
                         Field: '/components/AvailabilitySelector',
                     },
+                    condition: (data, sibilingData) => {
+                        return sibilingData.type === "Weekly"
+                    },
+                },
+                defaultValue: {
+                  'timeBlocks': [],
+                  'timeZone': null
                 },
                 hooks: {
-                    // before saving to db
-                    // beforeValidate: [], 
-                    // when reading from the db to the admin panel
-                    afterRead: [
-                      ({ value }) => {
-                        if (!value.timeZone) {
-                          return {
-                            'timeBlocks': [],
-                            'timeZone': null
-                          }
-                        } else {
-                          return value
+                  afterRead: [
+                    // convert old format availabilities 
+                    ({ value }) => {
+                      if (Array.isArray(value)) {
+                        return {
+                          'timeBlocks': [],
+                          'timeZone': null
                         }
+                      } else {
+                        return value
                       }
-                    ]
+                    }
+                  ]
                 }
             },
         ],

@@ -26,9 +26,20 @@ const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 export const AvailabilitySelector = ({ path }) => {
 
   // set up states etc
-  const { value = { 'timeBlocks': [], 'timeZone': DEVICE_TIMEZONE }, setValue } = useField({ path })
+  const { value, setValue } = useField({ path })
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
+
+  // when creating a listing, we need to default to the device's timezone
+  useEffect(() => {
+    if (!value.timeZone) {
+      console.log("set default tz")
+      setValue({
+        ...value,
+        timeZone: DEVICE_TIMEZONE
+      })
+    }
+  }, [])
 
   // HELPERS
   const createTime = (day, hour = 0, minute = 0) => {
