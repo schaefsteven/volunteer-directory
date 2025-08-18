@@ -33,7 +33,6 @@ export const AvailabilitySelector = ({ path }) => {
   // when creating a listing, we need to default to the device's timezone
   useEffect(() => {
     if (!value.timeZone) {
-      console.log("set default tz")
       setValue({
         ...value,
         timeZone: DEVICE_TIMEZONE

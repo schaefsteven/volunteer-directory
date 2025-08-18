@@ -8,6 +8,7 @@ export const Listings: CollectionConfig = {
     defaultColumns: ["title", "organization", "isRemote", "updatedAt"],
     group: "Content",
   },
+  versions: {drafts: true},
   access: {
     // Allow anyone to read
     read: () => true,
@@ -29,6 +30,12 @@ export const Listings: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+    },
+    {
+      name: "organization",
+      type: "relationship",
+      relationTo: "organizations",
+      required: false,
     },
     {
         type: "group",
@@ -118,6 +125,38 @@ export const Listings: CollectionConfig = {
                   ]
                 }
             },
+            {
+              name: "dates",
+              type: "array",
+              validate: (value) => {
+                console.log(value)
+                if (value.start >= value.end) {
+                  return "Start time must be before end time."
+                }
+              },
+              fields: [
+                {
+                  name: "start",
+                  type: "date",
+                  admin: {
+                    date: {
+                      pickerAppearance: "dayAndTime",
+                      timeIntervals: 15
+                    },
+                  },
+                },
+                {
+                  name: "end",
+                  type: "date",
+                  admin: {
+                    date: {
+                      pickerAppearance: "dayAndTime",
+                      timeIntervals: 15
+                    },
+                  },
+                },
+              ],
+            }
         ],
     },
     {

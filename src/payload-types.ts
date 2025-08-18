@@ -68,6 +68,7 @@ export interface Config {
   collections: {
     users: User;
     listings: Listing;
+    organizations: Organization;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -76,6 +77,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     listings: ListingsSelect<false> | ListingsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -136,6 +138,7 @@ export interface User {
 export interface Listing {
   id: string;
   title: string;
+  organization?: (string | null) | Organization;
   location: {
     type: ('In-person' | 'Hybrid' | 'Remote' | 'Lifestyle')[];
     anywhere?: boolean | null;
@@ -151,6 +154,13 @@ export interface Listing {
       | string
       | number
       | boolean
+      | null;
+    dates?:
+      | {
+          start?: string | null;
+          end?: string | null;
+          id?: string | null;
+        }[]
       | null;
   };
   description?: {
@@ -187,6 +197,17 @@ export interface Listing {
   tags?: ('environment' | 'homelessness' | 'food security' | 'LGBTQ' | 'consumer action')[] | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: string;
+  name: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -202,6 +223,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'listings';
         value: string | Listing;
+      } | null)
+    | ({
+        relationTo: 'organizations';
+        value: string | Organization;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -266,6 +291,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface ListingsSelect<T extends boolean = true> {
   title?: T;
+  organization?: T;
   location?:
     | T
     | {
@@ -278,11 +304,28 @@ export interface ListingsSelect<T extends boolean = true> {
     | {
         type?: T;
         availability?: T;
+        dates?:
+          | T
+          | {
+              start?: T;
+              end?: T;
+              id?: T;
+            };
       };
   description?: T;
   firstStep?: T;
   skills?: T;
   tags?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
   updatedAt?: T;
   createdAt?: T;
 }
