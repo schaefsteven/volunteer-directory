@@ -137,6 +137,9 @@ export interface User {
  */
 export interface Listing {
   id: string;
+  /**
+   * This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Volunteer", "Childcare Provider", or "Software Engineer". If that doesn't fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."
+   */
   title: string;
   organization?: (string | null) | Organization;
   location: {

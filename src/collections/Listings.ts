@@ -30,6 +30,9 @@ export const Listings: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      admin: {
+        description: 'This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Volunteer", "Childcare Provider", or "Software Engineer". If that doesn\'t fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."',
+      },
     },
     {
       name: "organization",
@@ -80,7 +83,12 @@ export const Listings: CollectionConfig = {
         type: "group",
         admin: {
             condition: (data) => {
-                return data.location.type !== "Lifestyle"
+              const arr = data.location.type
+              if (arr) {
+                return !(arr.length === 1 && arr[0] === "Lifestyle")
+              } else {
+                return true
+              }
             },
         },
         fields: [
@@ -128,32 +136,43 @@ export const Listings: CollectionConfig = {
             {
               name: "dates",
               type: "array",
-              validate: (value) => {
-                console.log(value)
-                if (value.start >= value.end) {
-                  return "Start time must be before end time."
+              admin: {
+                condition: (data) => {
+                  return data.schedule.type === "Specific Date(s)"
                 }
               },
               fields: [
                 {
-                  name: "start",
-                  type: "date",
-                  admin: {
-                    date: {
-                      pickerAppearance: "dayAndTime",
-                      timeIntervals: 15
+                  type: 'row',
+                  fields: [
+                    {
+                      name: "start",
+                      type: "date",
+                      admin: {
+                        date: {
+                          pickerAppearance: "dayAndTime",
+                          timeIntervals: 15
+                        },
+                      },
+                      validate: (value, { siblingData }) => {
+                        if (siblingData.start >= siblingData.end) {
+                          return "Start time must be before end time."
+                        } else {
+                          return true
+                        }
+                      }
                     },
-                  },
-                },
-                {
-                  name: "end",
-                  type: "date",
-                  admin: {
-                    date: {
-                      pickerAppearance: "dayAndTime",
-                      timeIntervals: 15
+                    {
+                      name: "end",
+                      type: "date",
+                      admin: {
+                        date: {
+                          pickerAppearance: "dayAndTime",
+                          timeIntervals: 15
+                        },
+                      },
                     },
-                  },
+                  ],
                 },
               ],
             }
