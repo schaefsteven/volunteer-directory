@@ -31,7 +31,7 @@ export const Listings: CollectionConfig = {
       type: "text",
       required: true,
       admin: {
-        description: 'This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Volunteer", "Childcare Provider", or "Software Engineer". If that doesn\'t fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."',
+        description: 'This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Childcare Provider", "Software Engineer", or "Volunteer". If that doesn\'t fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."',
       },
     },
     {
@@ -43,8 +43,6 @@ export const Listings: CollectionConfig = {
     {
         type: "group",
         name: "location",
-        //Need to adapt for listings that can be multiple location types
-        //What about in-person but "from anywhere" opportunities? bool that disables zip?
         fields: [
             {
                 name: "type",
@@ -179,7 +177,7 @@ export const Listings: CollectionConfig = {
         ],
     },
     {
-        name: "description",
+        name: "role",
         type: "richText",
     },
     {

@@ -138,7 +138,7 @@ export interface User {
 export interface Listing {
   id: string;
   /**
-   * This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Volunteer", "Childcare Provider", or "Software Engineer". If that doesn't fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."
+   * This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Childcare Provider", "Software Engineer", or "Volunteer". If that doesn't fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."
    */
   title: string;
   organization?: (string | null) | Organization;
@@ -166,7 +166,7 @@ export interface Listing {
         }[]
       | null;
   };
-  description?: {
+  role?: {
     root: {
       type: string;
       children: {
@@ -315,7 +315,7 @@ export interface ListingsSelect<T extends boolean = true> {
               id?: T;
             };
       };
-  description?: T;
+  role?: T;
   firstStep?: T;
   skills?: T;
   tags?: T;
