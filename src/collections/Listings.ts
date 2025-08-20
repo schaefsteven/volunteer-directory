@@ -101,6 +101,16 @@ export const Listings: CollectionConfig = {
                 ],
             },
             {
+              name: "minTimeBlock",
+              type: "json",
+              required: true,
+              admin: {
+                components: {
+                  Field: '/components/DurationSelector',
+                },
+              },
+            },
+            {
                 name: "availability",
                 type: "json",
                 admin: { 

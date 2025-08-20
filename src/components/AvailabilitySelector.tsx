@@ -23,7 +23,7 @@ const TIMEZONE_LIST = rawTimeZones.sort(
 
 const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-export const AvailabilitySelector = ({ path }) => {
+const AvailabilitySelector = ({ path }) => {
 
   // set up states etc
   const { value, setValue } = useField({ path })

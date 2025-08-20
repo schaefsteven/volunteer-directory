@@ -149,6 +149,15 @@ export interface Listing {
   };
   schedule?: {
     type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
+    minTimeBlock:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
     availability?:
       | {
           [k: string]: unknown;
@@ -306,6 +315,7 @@ export interface ListingsSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
+        minTimeBlock?: T;
         availability?: T;
         dates?:
           | T
