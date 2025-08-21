@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { useField } from '@payloadcms/ui'
 
 // TODO: 
-// improve parsing, handle edge-cases
 // styling
 
 const DurationSelector = ({ path }) => {
@@ -18,15 +17,48 @@ const DurationSelector = ({ path }) => {
     }
   }, [])
 
-  const parseInput = (string) => {
+  const stripInvalid = (string) => {
     // keep only numbers and :
     string = string.replace(/[^0-9:]/g, '')
-    if (string.includes(":")) {
-      const [hours, minutes] = string.split(":").map(Number)
-    } else {
-      const [hours, minutes] = [0, parseInt(string)]
+    // keep only the first colon
+    const firstColonIndex = string.indexOf(':')
+    // if no colons
+    if (firstColonIndex === -1) {
+      return string
     }
-    return hours * 60 + minutes
+    // split at first colon
+    const beforeColon = string.substring(0, firstColonIndex + 1)
+    const afterColon = string.substring(firstColonIndex + 1)
+
+    return beforeColon + afterColon.replace(/:/g, '')
+  }
+
+  const parseInput = (string) => {
+    if (string.length === 0) {
+      return 0
+    }
+    string = stripInvalid(string)
+    let parsedMinutes
+    if (string.includes(":")) {
+      const segments = string.split(":").map(Number)
+      if (segments.length > 1) {
+        // HH:MM
+        const [hours, minutes] = segments
+        parsedMinutes = hours * 60 + minutes
+      } else { 
+        // HH:
+        parsedMinutes = segments[0] * 60
+      }
+    } else {
+      // HH
+      parsedMinutes = parseInt(string) * 60
+    }
+    // limit to one week
+    if (parsedMinutes > 10080) {
+      return 10080
+    } else {
+      return parsedMinutes
+    }
   }
 
   const formatDuration = (minutes) => {
@@ -36,7 +68,7 @@ const DurationSelector = ({ path }) => {
   }
 
   const handleChange = (e) => {
-    setDispValue(e.target.value)
+    setDispValue(stripInvalid(e.target.value))
     setValue(parseInput(e.target.value))
   }
 
@@ -47,6 +79,13 @@ const DurationSelector = ({ path }) => {
   const handleBlur = () => {
     setIsEditing(false)
     setDispValue(formatDuration(value))
+  }
+
+  const onEnter = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      setDispValue(formatDuration(value))
+    }
   }
 
   return (
@@ -64,6 +103,8 @@ const DurationSelector = ({ path }) => {
         onFocus={handleFocus}
         onChange={handleChange}
         value={dispValue}
+        onKeyDown={onEnter}
+        pattern="^[0-9]*:?[0-9]*$"
       />
     </div>
   )

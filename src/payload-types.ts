@@ -149,6 +149,9 @@ export interface Listing {
   };
   schedule?: {
     type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
+    /**
+     * This is the minimum amount of time that someone can volunteer for
+     */
     minTimeBlock:
       | {
           [k: string]: unknown;

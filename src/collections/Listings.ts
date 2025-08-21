@@ -108,6 +108,7 @@ export const Listings: CollectionConfig = {
                 components: {
                   Field: '/components/DurationSelector',
                 },
+                description: "This is the minimum amount of time that someone can volunteer for",
               },
             },
             {
