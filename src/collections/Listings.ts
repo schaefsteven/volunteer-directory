@@ -1,5 +1,8 @@
 import { CollectionConfig } from "payload"
 import { getUnixTime, fromUnixTime, interval, areIntervalsOverlapping } from "date-fns"
+import { TIMEZONE_LIST } from "../constants"
+
+console.log(TIMEZONE_LIST)
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -109,6 +112,16 @@ export const Listings: CollectionConfig = {
                   Field: '/components/DurationSelector',
                 },
                 description: "This is the minimum amount of time that someone can volunteer for",
+              },
+            },
+            {
+              name: "timezone",
+              type: "select",
+              options: TIMEZONE_LIST,
+              admin: {
+                components: {
+                  Field: '/components/TimezoneSelector',
+                },
               },
             },
             {
