@@ -1,27 +1,10 @@
 'use client' 
 import { useState, useRef, useEffect } from 'react'
-import { useField, Select } from '@payloadcms/ui'
+import { useField } from '@payloadcms/ui'
 import styles from './AvailabilitySelector.module.css'
 import cn from 'classnames'
 import { format, parse } from "date-fns"
 import { UTCDateMini, utc } from "@date-fns/utc"
-import { rawTimeZones } from '@vvo/tzdb'
-
-const formatOffset = (offset) => {
-  const sign = offset < 0 ? '-' : '+'
-  const hours = Math.abs(Math.floor(offset / 60))
-  const minutes = String(Math.abs(offset % 60)).padStart(2, '0')
-  return sign + hours + ':' + minutes
-}
-
-const TIMEZONE_LIST = rawTimeZones.sort(
-  (a, b) => a.rawOffsetInMinutes - b.rawOffsetInMinutes).map(
-  (tz) => ({
-    'value': tz.name,
-    'label': tz.alternativeName + ' (' + tz.name.replace(/_/, ' ') + ') UTC' + formatOffset(tz.rawOffsetInMinutes)
-  }))
-
-const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const AvailabilitySelector = ({ path }) => {
 
@@ -30,15 +13,7 @@ const AvailabilitySelector = ({ path }) => {
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
-  // when creating a listing, we need to default to the device's timezone
-  useEffect(() => {
-    if (!value.timeZone) {
-      setValue({
-        ...value,
-        timeZone: DEVICE_TIMEZONE
-      })
-    }
-  }, [])
+  console.log(value)
 
   // HELPERS
   const createTime = (day, hour = 0, minute = 0) => {
@@ -100,10 +75,7 @@ const AvailabilitySelector = ({ path }) => {
     const flatSort = rows.flat().sort((a, b) => a.start - b.start)
     if (flatSort.length == 0) {
       // return here if array is empty
-      return {
-        'timeBlocks': flatSort, 
-        'timeZone': value.timeZone
-      }
+      return flatSort
     }
     // merge overlapping timeBlocks
     const merged = [flatSort[0]]
@@ -116,10 +88,7 @@ const AvailabilitySelector = ({ path }) => {
         merged.push(current)
       }
     }
-    return {
-      'timeBlocks': merged, 
-      'timeZone': value.timeZone
-    }
+    return merged
   }
 
   // HANDLERS
@@ -182,17 +151,10 @@ const AvailabilitySelector = ({ path }) => {
     return null
   }
 
-  const handleTimezoneChange = (e) => {
-    setValue({
-      ...value,
-      timeZone: e.value
-    })
-  }
-
   const getDay = (minutesOfWeek) => Math.floor(minutesOfWeek / 1440)
 
   const rows = Array(7).fill().map(() => [])
-  for (let block of value?.timeBlocks) {
+  for (let block of value) {
     // split blocks that span midnight and add them to the rows array
     const startDay = getDay(block.start)
     const endDay = getDay(block.end - 1)
@@ -216,25 +178,6 @@ const AvailabilitySelector = ({ path }) => {
 
   return (
     <div>
-      <label 
-        htmlFor="timezone-select"
-      >
-        Timezone
-      </label>
-      <Select
-        id="timezone-select"
-        options={TIMEZONE_LIST}
-        value={TIMEZONE_LIST.find(tz => tz.value === value.timeZone)}
-        onChange={handleTimezoneChange}
-      />
-      {
-        (value.timeZone != DEVICE_TIMEZONE) && 
-        <span 
-          className={cn(styles.alert)}
-        >
-          This is not your device's current timezone.
-        </span>
-      }
       <div className={cn(styles.avsel_rows_container)}>
         {rows.map((timeBlocks, day) => (
           <Row

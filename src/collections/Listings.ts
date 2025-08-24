@@ -135,24 +135,8 @@ export const Listings: CollectionConfig = {
                         return sibilingData.type === "Weekly"
                     },
                 },
-                defaultValue: {
-                  'timeBlocks': [],
-                  'timeZone': null
-                },
+                defaultValue: [],
                 hooks: {
-                  afterRead: [
-                    // convert old format availabilities 
-                    ({ value }) => {
-                      if (Array.isArray(value)) {
-                        return {
-                          'timeBlocks': [],
-                          'timeZone': null
-                        }
-                      } else {
-                        return value
-                      }
-                    }
-                  ]
                 }
             },
             {

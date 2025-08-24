@@ -7,8 +7,8 @@ const DEVICE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const TimezoneSelector: SelectFieldClientComponent = (props) => {
 
+  // default to device timezone when creating new listing
   const { value, setValue } = useField({ path: props.path })
-
   useEffect(() => {
     if (value === undefined) {
       setValue(DEVICE_TIMEZONE)
@@ -18,6 +18,12 @@ const TimezoneSelector: SelectFieldClientComponent = (props) => {
   return (
     <div>
       <SelectField {... props} />
+      {
+        (value != DEVICE_TIMEZONE) && 
+        <span>
+          This is not your device's current timezone.
+        </span>
+      }
     </div>
   )
 
