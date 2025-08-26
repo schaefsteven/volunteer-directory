@@ -2,8 +2,6 @@ import { CollectionConfig } from "payload"
 import { getUnixTime, fromUnixTime, interval, areIntervalsOverlapping } from "date-fns"
 import { TIMEZONE_LIST } from "../constants"
 
-console.log(TIMEZONE_LIST)
-
 export const Listings: CollectionConfig = {
   slug: "listings",
   admin: {

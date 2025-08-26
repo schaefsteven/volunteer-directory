@@ -13,8 +13,6 @@ const AvailabilitySelector = ({ path }) => {
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
-  console.log(value)
-
   // HELPERS
   const createTime = (day, hour = 0, minute = 0) => {
     // returns minutes of the week from day, hour, minute
