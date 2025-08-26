@@ -1,12 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useField } from '@payloadcms/ui'
+import { useField, FieldError, FieldLabel, fieldBaseClass } from '@payloadcms/ui'
 
 // TODO: 
 // styling
 
 const DurationSelector = ({ path }) => {
-  const { value, setValue } = useField({ path })
+  const { value, setValue, errorMessage, showError } = useField({ path })
   const [dispValue, setDispValue] = useState('')
   const [isEditing, setIsEditing] = useState(false)
 
@@ -91,21 +91,25 @@ const DurationSelector = ({ path }) => {
   return (
 
     <div>
-      <label 
-        htmlFor="duration-select"
-      >
-        Minimum Time Block
-      </label>
-      <input
-        id="duration-select"
-        placeholder="HH:MM"
-        onBlur={handleBlur}
-        onFocus={handleFocus}
-        onChange={handleChange}
-        value={dispValue}
-        onKeyDown={onEnter}
-        pattern="^[0-9]*:?[0-9]*$"
-      />
+      <FieldLabel label="Minimum Time Block" path={path} />
+      <div className={`${fieldBaseClass}__wrap`}>
+        <FieldError
+          showError={showError}
+          message={errorMessage}
+          path={path}
+        />
+
+        <input
+          id="duration-select"
+          placeholder="HH:MM"
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          onChange={handleChange}
+          value={dispValue}
+          onKeyDown={onEnter}
+          pattern="^[0-9]*:?[0-9]*$"
+        />
+      </div>
     </div>
   )
 }
