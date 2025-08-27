@@ -103,9 +103,8 @@ export const Listings: CollectionConfig = {
             },
             {
               name: "minTimeBlock",
-              type: "json",
+              type: "number",
               required: true,
-              validate: (value) => 'test',
               admin: {
                 components: {
                   Field: '/components/DurationSelector',

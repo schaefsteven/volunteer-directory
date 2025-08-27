@@ -5,7 +5,7 @@ import { useField, FieldError, FieldLabel, fieldBaseClass } from '@payloadcms/ui
 // TODO: 
 // styling
 
-const DurationSelector = ({ path }) => {
+const DurationSelector = ({ path, field }) => {
   const { value, setValue, errorMessage, showError } = useField({ path })
   const [dispValue, setDispValue] = useState('')
   const [isEditing, setIsEditing] = useState(false)
@@ -62,13 +62,22 @@ const DurationSelector = ({ path }) => {
   }
 
   const formatDuration = (minutes) => {
+    if (minutes === undefined) {
+      return ''
+    }
     const hours = Math.floor(minutes / 60)
     const dispMin = minutes % 60
     return `${hours}:${dispMin.toString().padStart(2, '0')}`
   }
 
   const handleChange = (e) => {
-    setDispValue(stripInvalid(e.target.value))
+    const strippedValue = stripInvalid(e.target.value)
+    if (strippedValue === '') {
+      setDispValue('')
+      setValue(undefined)
+      return
+    }
+    setDispValue(stripInvalid(strippedValue))
     setValue(parseInput(e.target.value))
   }
 
@@ -88,10 +97,18 @@ const DurationSelector = ({ path }) => {
     }
   }
 
-  return (
+return (
 
-    <div>
-      <FieldLabel label="Minimum Time Block" path={path} />
+    <div 
+      className={[
+        fieldBaseClass, 
+        'number',
+        showError && 'error',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <FieldLabel label="Minimum Time Block" path={path} required={field.required}/>
       <div className={`${fieldBaseClass}__wrap`}>
         <FieldError
           showError={showError}
@@ -107,7 +124,7 @@ const DurationSelector = ({ path }) => {
           onChange={handleChange}
           value={dispValue}
           onKeyDown={onEnter}
-          pattern="^[0-9]*:?[0-9]*$"
+          name={path}
         />
       </div>
     </div>

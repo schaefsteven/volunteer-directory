@@ -152,15 +152,7 @@ export interface Listing {
     /**
      * This is the minimum amount of time that someone can volunteer for
      */
-    minTimeBlock:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
+    minTimeBlock: number;
     timezone?:
       | (
           | 'Pacific/Midway'
