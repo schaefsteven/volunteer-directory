@@ -2,9 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useField, FieldError, FieldLabel, fieldBaseClass } from '@payloadcms/ui'
 
-// TODO: 
-// styling
-
 const DurationSelector = ({ path, field }) => {
   const { value, setValue, errorMessage, showError } = useField({ path })
   const [dispValue, setDispValue] = useState('')
@@ -108,7 +105,7 @@ return (
         .filter(Boolean)
         .join(' ')}
     >
-      <FieldLabel label="Minimum Time Block" path={path} required={field.required}/>
+      <FieldLabel label={field.label} path={path} required={field.required}/>
       <div className={`${fieldBaseClass}__wrap`}>
         <FieldError
           showError={showError}

@@ -103,6 +103,7 @@ export const Listings: CollectionConfig = {
             },
             {
               name: "minTimeBlock",
+              label: "Minimum Time Block",
               type: "number",
               required: true,
               admin: {
@@ -115,10 +116,15 @@ export const Listings: CollectionConfig = {
             {
               name: "timezone",
               type: "select",
+              required: true,
               options: TIMEZONE_LIST,
               admin: {
                 components: {
                   Field: '/components/TimezoneSelector',
+                },
+                condition: (data) => {
+                  console.log(data.schedule.type)
+                  return data.schedule.type !== "Any Time"
                 },
               },
             },
