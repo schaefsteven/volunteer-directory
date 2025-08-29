@@ -129,8 +129,20 @@ export const Listings: CollectionConfig = {
               },
             },
             {
+              name: "sample",
+              type: "number",
+            },
+            {
                 name: "availability",
                 type: "json",
+                required: true,
+                validate: (value) => {
+                  if (value.length < 1) {
+                    return 'At least 1 time block is required.'
+                  } else {
+                    return true
+                  }
+                },
                 admin: { 
                     components: {
                         Field: '/components/AvailabilitySelector',

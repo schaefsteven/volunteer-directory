@@ -1,6 +1,6 @@
 'use client' 
 import { useState, useRef, useEffect } from 'react'
-import { useField } from '@payloadcms/ui'
+import { useField, FieldError, fieldBaseClass } from '@payloadcms/ui'
 import styles from './AvailabilitySelector.module.css'
 import cn from 'classnames'
 import { format, parse } from "date-fns"
@@ -9,7 +9,7 @@ import { UTCDateMini, utc } from "@date-fns/utc"
 const AvailabilitySelector = ({ path }) => {
 
   // set up states etc
-  const { value, setValue } = useField({ path })
+  const { value, setValue, errorMessage, showError } = useField({ path })
   const [editContext, setEditContext] = useState(null)
   const editModalRef = useRef(null)
 
@@ -175,27 +175,41 @@ const AvailabilitySelector = ({ path }) => {
   }
 
   return (
-    <div>
-      <div className={cn(styles.avsel_rows_container)}>
-        {rows.map((timeBlocks, day) => (
-          <Row
-            key={day}
-            day={day}
-            timeBlocks={timeBlocks}
-            handleAddButton={handleAddButton}
-            handleEditButton={handleEditButton}
-            uiTimeFormat={uiTimeFormat}
-          />
-        ))}
+    <div
+      className={[
+        fieldBaseClass, 
+        showError && 'error',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div className={`${fieldBaseClass}__wrap`}>
+        <FieldError
+          showError={showError}
+          message={errorMessage}
+          path={path}
+        />
+        <div className={cn(styles.avsel_rows_container)}>
+          {rows.map((timeBlocks, day) => (
+            <Row
+              key={day}
+              day={day}
+              timeBlocks={timeBlocks}
+              handleAddButton={handleAddButton}
+              handleEditButton={handleEditButton}
+              uiTimeFormat={uiTimeFormat}
+            />
+          ))}
+        </div>
+        <EditModal
+          handleDeleteButton={handleDeleteButton}
+          handleCancelButton={handleCancelButton}
+          handleSaveButton={handleSaveButton}
+          editContext={editContext}
+          editModalRef={editModalRef}
+          uiTimeFormat={uiTimeFormat}
+        />
       </div>
-      <EditModal
-        handleDeleteButton={handleDeleteButton}
-        handleCancelButton={handleCancelButton}
-        handleSaveButton={handleSaveButton}
-        editContext={editContext}
-        editModalRef={editModalRef}
-        uiTimeFormat={uiTimeFormat}
-      />
     </div>
   )
 }

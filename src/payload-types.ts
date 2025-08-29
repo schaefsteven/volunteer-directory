@@ -472,6 +472,7 @@ export interface Listing {
           | 'Pacific/Kiritimati'
         )
       | null;
+    sample?: number | null;
     availability?:
       | {
           [k: string]: unknown;
@@ -631,6 +632,7 @@ export interface ListingsSelect<T extends boolean = true> {
         type?: T;
         minTimeBlock?: T;
         timezone?: T;
+        sample?: T;
         availability?: T;
         dates?:
           | T
