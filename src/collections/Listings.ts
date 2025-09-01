@@ -58,22 +58,27 @@ export const Listings: CollectionConfig = {
                 ],
             },
             {
-                name: "anywhere",
-                type: "checkbox",
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type?.some( (el) => ["In-person", "Hybrid"].includes(el) ) ?? false
-                    },
+              name: "coordinates",
+              required: false,
+              type: "array",
+              fields: [
+                {
+                  name: "coordinate",
+                  type: "point",
                 },
+              ],
             },
             {
-                name: "zipCode",
-                type: "number",
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type?.some( (el) => ["In-person", "Hybrid"].includes(el) && !sibilingData.anywhere ) ?? false
-                    },
+              name: "regions",
+              label: "Region(s)",
+              required: false,
+              type: "array",
+              fields: [
+                {
+                  name: "region",
+                  type: "text",
                 },
+              ],
             },
         ],
     },
@@ -127,10 +132,6 @@ export const Listings: CollectionConfig = {
                   return data.schedule.type !== "Any Time"
                 },
               },
-            },
-            {
-              name: "sample",
-              type: "number",
             },
             {
                 name: "availability",

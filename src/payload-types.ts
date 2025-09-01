@@ -144,8 +144,22 @@ export interface Listing {
   organization?: (string | null) | Organization;
   location: {
     type: ('In-person' | 'Hybrid' | 'Remote' | 'Lifestyle')[];
-    anywhere?: boolean | null;
-    zipCode?: number | null;
+    coordinates?:
+      | {
+          /**
+           * @minItems 2
+           * @maxItems 2
+           */
+          coordinate?: [number, number] | null;
+          id?: string | null;
+        }[]
+      | null;
+    regions?:
+      | {
+          region?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   schedule?: {
     type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
@@ -472,7 +486,6 @@ export interface Listing {
           | 'Pacific/Kiritimati'
         )
       | null;
-    sample?: number | null;
     availability?:
       | {
           [k: string]: unknown;
@@ -623,8 +636,18 @@ export interface ListingsSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
-        anywhere?: T;
-        zipCode?: T;
+        coordinates?:
+          | T
+          | {
+              coordinate?: T;
+              id?: T;
+            };
+        regions?:
+          | T
+          | {
+              region?: T;
+              id?: T;
+            };
       };
   schedule?:
     | T
@@ -632,7 +655,6 @@ export interface ListingsSelect<T extends boolean = true> {
         type?: T;
         minTimeBlock?: T;
         timezone?: T;
-        sample?: T;
         availability?: T;
         dates?:
           | T
