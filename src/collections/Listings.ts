@@ -59,6 +59,7 @@ export const Listings: CollectionConfig = {
             },
             {
               name: "coordinates",
+              // looking at locationIQ for forward-geocoding so editors can search an address and get coords
               required: false,
               type: "array",
               fields: [
@@ -77,6 +78,11 @@ export const Listings: CollectionConfig = {
                 {
                   name: "region",
                   type: "text",
+                  admin: {
+                    components: {
+                      Field: '/components/RegionSelector'
+                    }
+                  }
                 },
               ],
             },

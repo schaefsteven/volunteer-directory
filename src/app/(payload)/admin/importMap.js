@@ -1,3 +1,4 @@
+import { default as default_c104ab9b391aa84e386b9c69cd54f935 } from '../../../components/RegionSelector'
 import { default as default_c75f7df0f3fac138453c133ace5ba4c2 } from '../../../components/DurationSelector'
 import { default as default_559e7efe6fd9491f20f9e6aa7a69ddd6 } from '../../../components/TimezoneSelector'
 import { default as default_329815e0b632d4e53e85a627da2854ca } from '../../../components/AvailabilitySelector'
@@ -25,6 +26,7 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 
 export const importMap = {
+  "/components/RegionSelector#default": default_c104ab9b391aa84e386b9c69cd54f935,
   "/components/DurationSelector#default": default_c75f7df0f3fac138453c133ace5ba4c2,
   "/components/TimezoneSelector#default": default_559e7efe6fd9491f20f9e6aa7a69ddd6,
   "/components/AvailabilitySelector#default": default_329815e0b632d4e53e85a627da2854ca,
