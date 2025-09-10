@@ -156,7 +156,15 @@ export interface Listing {
       | null;
     regions?:
       | {
-          region?: string | null;
+          region?:
+            | {
+                [k: string]: unknown;
+              }
+            | unknown[]
+            | string
+            | number
+            | boolean
+            | null;
           id?: string | null;
         }[]
       | null;

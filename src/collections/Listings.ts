@@ -77,7 +77,8 @@ export const Listings: CollectionConfig = {
               fields: [
                 {
                   name: "region",
-                  type: "text",
+                  type: "json",
+                  defaultValue: { country: '', regions: [] }, 
                   admin: {
                     components: {
                       Field: '/components/RegionSelector'
