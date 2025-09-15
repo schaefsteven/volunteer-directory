@@ -78,14 +78,22 @@ export const Listings: CollectionConfig = {
                 {
                   name: "region",
                   type: "json",
-                  defaultValue: { country: '', regions: [] }, 
                   admin: {
                     components: {
                       Field: '/components/RegionSelector'
                     }
-                  }
+                  },
                 },
               ],
+            },
+            {
+              name: "test",
+              type: "json",
+              admin: {
+                components: {
+                  Field: '/components/Test'
+                }
+              }
             },
         ],
     },

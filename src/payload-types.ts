@@ -168,6 +168,15 @@ export interface Listing {
           id?: string | null;
         }[]
       | null;
+    test?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   schedule?: {
     type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
@@ -656,6 +665,7 @@ export interface ListingsSelect<T extends boolean = true> {
               region?: T;
               id?: T;
             };
+        test?: T;
       };
   schedule?:
     | T

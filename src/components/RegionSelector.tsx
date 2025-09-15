@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useField, SelectField, FieldError, FieldLabel, fieldBaseClass } from '@payloadcms/ui'
+import { useField, SelectInput, ReactSelect, FieldError, FieldLabel, fieldBaseClass } from '@payloadcms/ui'
 import { allCountries } from 'country-region-data'
 
 const countryOptions = allCountries.map((country) => ({
@@ -8,22 +8,25 @@ const countryOptions = allCountries.map((country) => ({
   'label': country[0],
 }))
 
-const RegionSelector = (props) => {
-  const { value = { country: '', regions: [] }, setValue } = useField(props.path)
-  console.log(value)
-  const [ selectedCountry, setSelectedCountry ] = useState(value.country)
-  const [ selectedRegions, setSelectedRegions ] = useState(value.regions)
+const RegionSelector = ({ path }) => {
+  const { value = { country: '', regions: [] }, setValue, } = useField({ path })
+  
+  const onCountryChange = (selectedOption) => {
+    setValue(
+      {
+        ...value,
+        country: selectedOption.value
+      }
+    )
+  }
 
-  console.log(selectedCountry)
-  console.log(selectedRegions)
+  console.log(value)
   return (
     <div className={fieldBaseClass}>
-      <SelectField 
-        field={{
-          name: "Country",
-          options: countryOptions,
-        }}
-        path={props.path + ".country"}
+      <ReactSelect
+        options={countryOptions}
+        onChange={onCountryChange}
+        value={value.country}
       />
     </div>
   )
