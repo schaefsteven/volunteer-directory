@@ -86,15 +86,6 @@ export const Listings: CollectionConfig = {
                 },
               ],
             },
-            {
-              name: "test",
-              type: "json",
-              admin: {
-                components: {
-                  Field: '/components/Test'
-                }
-              }
-            },
         ],
     },
     {
