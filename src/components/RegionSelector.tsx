@@ -12,23 +12,41 @@ const RegionSelector = ({ path, field }) => {
   const { value = { country: '', regions: [] }, setValue, errorMessage, showError } = useField({ path })
   const [regionOptions, setRegionOptions] = useState([])
   
-  const onCountryChange = (selectedOption) => {
-    setValue(
-      {
-        country: selectedOption.value, 
-        regions: [] // we don't want to keep the old regions from the old country, duh
+  useEffect(() => {
+    if (value.country) {
+      const foundCountry = allCountries.find(el => el[0] === value.country)
+      if (foundCountry) {
+        const newRegionOptions = foundCountry[2].map(region => ({
+          value: region[0],
+          label: region[0],
+        }))
+        setRegionOptions(newRegionOptions)
+      } else {
+        setRegionOptions([])
       }
-    )
+    } else {
+      setRegionOptions([])
+    }
+  }, [value.country])
+
+  const onCountryChange = (selectedOption) => {
+    if (selectedOption === null) {
+      setValue({ country:'', regions: [] })
+    } else {
+      setValue(
+        {
+          country: selectedOption.value, 
+          regions: [] // we don't want to keep the old regions from the old country, duh
+        }
+      )
+    }
   }
   
   const onRegionChange = (selectedOption) => {
-    console.log(selectedOption)
     let newValue
     if (Array.isArray(selectedOption)) {
-      console.log('array')
       newValue = selectedOption.map((option) => option.value)
     } else {
-      console.log('else')
       newValue = []
     }
 
@@ -40,23 +58,6 @@ const RegionSelector = ({ path, field }) => {
     )
   }
 
-  useEffect(() => {
-    if (value.country) {
-      const foundCountry = allCountries.find(el => el[0] === value.country)
-      if (foundCountry) {
-        const newRegionOptions = foundCountry[2].map(region => ({
-          value: region,
-          label: region
-        }))
-        setRegionOptions(newRegionOptions)
-      } else {
-        setRegionOptions([])
-      }
-    } else {
-      setRegionOptions([])
-    }
-  }, [value.country])
-
   return (
     <div 
       className={[
@@ -66,22 +67,27 @@ const RegionSelector = ({ path, field }) => {
         .filter(Boolean)
         .join(' ')}
     >
-      <FieldLabel label={field.label} path={path} required={field.required}/>
+      <FieldLabel label='' path={path} required={field.required}/>
       <SelectInput
+        label="Country"
         options={countryOptions}
         onChange={onCountryChange}
         value={value.country}
         path={path + ".country"}
         required={true}
       />
-      <SelectInput
-        options={regionOptions}
-        onChange={onRegionChange}
-        hasMany={true}
-        value={value.regions}
-        path={path + ".regions"}
-        required={true}
-      />
+      {
+        (value.country) &&
+        <SelectInput
+          label="Regions"
+          options={regionOptions}
+          onChange={onRegionChange}
+          hasMany={true}
+          value={value.regions}
+          path={path + ".regions"}
+          required={true}
+        />
+      }
     </div>
   )
 }
