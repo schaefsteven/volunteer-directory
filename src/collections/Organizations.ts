@@ -5,6 +5,7 @@ export const Organizations: CollectionConfig = {
   admin: {
     useAsTitle: "name",
   },
+  versions: {drafts: true},
   access: {
     // Allow anyone to read
     read: () => true,
