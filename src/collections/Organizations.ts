@@ -27,5 +27,9 @@ export const Organizations: CollectionConfig = {
       type: "text",
       required: true,
     },
+    {
+      name: "description",
+      type: "richText",
+    },
   ]
 }
