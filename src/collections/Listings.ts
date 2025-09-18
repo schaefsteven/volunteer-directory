@@ -74,6 +74,11 @@ export const Listings: CollectionConfig = {
               label: "Region(s)",
               required: false,
               type: "array",
+              admin: {
+                components: {
+                  RowLabel: '/components/RegionRowLabel'
+                }
+              }, 
               fields: [
                 {
                   name: "region",
@@ -134,7 +139,6 @@ export const Listings: CollectionConfig = {
                   Field: '/components/TimezoneSelector',
                 },
                 condition: (data) => {
-                  console.log(data.schedule.type)
                   return data.schedule.type !== "Any Time"
                 },
               },
