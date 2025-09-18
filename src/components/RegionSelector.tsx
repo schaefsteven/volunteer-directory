@@ -29,7 +29,7 @@ const RegionSelector = ({ path, field }) => {
     }
   }, [value.country])
 
-  const onCountryChange = (selectedOption) => {
+  const handleCountryChange = (selectedOption) => {
     if (selectedOption === null) {
       setValue({ country:'', regions: [] })
     } else {
@@ -42,7 +42,7 @@ const RegionSelector = ({ path, field }) => {
     }
   }
   
-  const onRegionChange = (selectedOption) => {
+  const handleRegionChange = (selectedOption) => {
     let newValue
     if (Array.isArray(selectedOption)) {
       newValue = selectedOption.map((option) => option.value)
@@ -58,6 +58,16 @@ const RegionSelector = ({ path, field }) => {
     )
   }
 
+  const handleSelectAll = () => {
+    if (value.country) {
+      console.log(regionOptions)
+      setValue({
+        ...value,
+        regions: regionOptions.map(el => el.value),
+      })
+    }
+  }
+
   return (
     <div 
       className={[
@@ -71,22 +81,31 @@ const RegionSelector = ({ path, field }) => {
       <SelectInput
         label="Country"
         options={countryOptions}
-        onChange={onCountryChange}
+        onChange={handleCountryChange}
         value={value.country}
         path={path + ".country"}
         required={true}
       />
       {
         (value.country) &&
-        <SelectInput
-          label="Regions"
-          options={regionOptions}
-          onChange={onRegionChange}
-          hasMany={true}
-          value={value.regions}
-          path={path + ".regions"}
-          required={true}
-        />
+        <div>
+          <SelectInput
+            label="Regions"
+            options={regionOptions}
+            onChange={handleRegionChange}
+            hasMany={true}
+            value={value.regions}
+            path={path + ".regions"}
+            required={true}
+          />
+          <button
+            role="button"
+            type="button"
+            onClick={handleSelectAll}
+          >
+            Select All
+          </button>
+        </div>
       }
     </div>
   )
