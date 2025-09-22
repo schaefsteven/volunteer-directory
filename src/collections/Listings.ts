@@ -228,6 +228,9 @@ export const Listings: CollectionConfig = {
             "manual labor",
             "carpentry",
             "food service",
+            "communication",
+            "mental health services",
+            "writing",
         ],
     },
     {
@@ -239,7 +242,8 @@ export const Listings: CollectionConfig = {
             "homelessness",
             "food security",
             "LGBTQ",
-            "consumer action",
+            "consumer rights",
+            "suicide prevention",
         ],
     },
     // Rest of your fields

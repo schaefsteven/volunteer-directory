@@ -541,8 +541,20 @@ export interface Listing {
     };
     [k: string]: unknown;
   } | null;
-  skills?: ('software developer' | 'manual labor' | 'carpentry' | 'food service')[] | null;
-  tags?: ('environment' | 'homelessness' | 'food security' | 'LGBTQ' | 'consumer action')[] | null;
+  skills?:
+    | (
+        | 'software developer'
+        | 'manual labor'
+        | 'carpentry'
+        | 'food service'
+        | 'communication'
+        | 'mental health services'
+        | 'writing'
+      )[]
+    | null;
+  tags?:
+    | ('environment' | 'homelessness' | 'food security' | 'LGBTQ' | 'consumer rights' | 'suicide prevention')[]
+    | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
