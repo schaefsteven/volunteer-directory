@@ -231,6 +231,11 @@ export const Listings: CollectionConfig = {
             "communication",
             "mental health services",
             "writing",
+            "events",
+            "community engagement",
+            "cleaning",
+            "landscaping",
+            "spanish",
         ],
     },
     {
@@ -244,6 +249,9 @@ export const Listings: CollectionConfig = {
             "LGBTQ",
             "consumer rights",
             "suicide prevention",
+            "arts",
+            "outdoors",
+            "parks",
         ],
     },
     // Rest of your fields

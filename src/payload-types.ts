@@ -550,10 +550,25 @@ export interface Listing {
         | 'communication'
         | 'mental health services'
         | 'writing'
+        | 'events'
+        | 'community engagement'
+        | 'cleaning'
+        | 'landscaping'
+        | 'spanish'
       )[]
     | null;
   tags?:
-    | ('environment' | 'homelessness' | 'food security' | 'LGBTQ' | 'consumer rights' | 'suicide prevention')[]
+    | (
+        | 'environment'
+        | 'homelessness'
+        | 'food security'
+        | 'LGBTQ'
+        | 'consumer rights'
+        | 'suicide prevention'
+        | 'arts'
+        | 'outdoors'
+        | 'parks'
+      )[]
     | null;
   updatedAt: string;
   createdAt: string;
