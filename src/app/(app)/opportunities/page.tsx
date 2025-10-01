@@ -6,7 +6,7 @@ import OpportunityCard from "@/components/OpportunityCard";
 import FilterSidebar from "@/components/FilterSidebar";
 import Pagination from "@/components/Pagination";
 import SortSelector from "@/components/SortSelector";
-import SearchBar from "@/components/Searchbar";
+import SearchBar from "@/components/SearchBar";
 import { getDummyOpportunities, Opportunity } from "@/lib/dummyData";
 
 // Define interface for filter state
