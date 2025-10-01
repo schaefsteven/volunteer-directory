@@ -1,4 +1,6 @@
-import { CollectionConfig } from "payload";
+import { CollectionConfig } from "payload"
+import { getUnixTime, fromUnixTime, interval, areIntervalsOverlapping } from "date-fns"
+import { TIMEZONE_LIST } from "../constants"
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -7,6 +9,7 @@ export const Listings: CollectionConfig = {
     defaultColumns: ["title", "organization", "isRemote", "updatedAt"],
     group: "Content",
   },
+  versions: {drafts: true},
   access: {
     // Allow anyone to read
     read: () => true,
@@ -28,12 +31,19 @@ export const Listings: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      admin: {
+        description: 'This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Childcare Provider", "Software Engineer", or "Volunteer". If that doesn\'t fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."',
+      },
+    },
+    {
+      name: "organization",
+      type: "relationship",
+      relationTo: "organizations",
+      required: false,
     },
     {
         type: "group",
         name: "location",
-        //Need to adapt for listings that can be multiple location types
-        //What about in-person but "from anywhere" opportunities? bool that disables zip?
         fields: [
             {
                 name: "type",
@@ -48,22 +58,38 @@ export const Listings: CollectionConfig = {
                 ],
             },
             {
-                name: "anywhere",
-                type: "checkbox",
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type.some( (el) => ["In-person", "Hybrid"].includes(el) )
-                    },
+              name: "coordinates",
+              // looking at locationIQ for forward-geocoding so editors can search an address and get coords
+              required: false,
+              type: "array",
+              fields: [
+                {
+                  name: "coordinate",
+                  type: "point",
                 },
+              ],
             },
             {
-                name: "zipCode",
-                type: "number",
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type.some( (el) => ["In-person", "Hybrid"].includes(el) && !sibilingData.anywhere )
-                    },
+              name: "regions",
+              label: "Region(s)",
+              required: false,
+              type: "array",
+              admin: {
+                components: {
+                  RowLabel: '/components/RegionRowLabel'
+                }
+              }, 
+              fields: [
+                {
+                  name: "region",
+                  type: "json",
+                  admin: {
+                    components: {
+                      Field: '/components/RegionSelector'
+                    }
+                  },
                 },
+              ],
             },
         ],
     },
@@ -72,7 +98,12 @@ export const Listings: CollectionConfig = {
         type: "group",
         admin: {
             condition: (data) => {
-                return data.location.type !== "Lifestyle"
+              const arr = data.location.type
+              if (arr) {
+                return !(arr.length === 1 && arr[0] === "Lifestyle")
+              } else {
+                return true
+              }
             },
         },
         fields: [
@@ -87,49 +118,101 @@ export const Listings: CollectionConfig = {
                 ],
             },
             {
-                name: "availability",
-                //label: "",
-                type: "array",
-                minRows: 1,
-                labels: {
-                    singular: "Time Block",
-                    plural: "Time Blocks",
+              name: "minTimeBlock",
+              label: "Minimum Time Block",
+              type: "number",
+              required: true,
+              admin: {
+                components: {
+                  Field: '/components/DurationSelector',
                 },
-                fields: [
-                    {
-                        type: "number",
-                        name: "start",
-                        min: 0,
-                        max: 169,
-                    },
-                    {
-                        type: "number",
-                        name: "end",
-                        min: 0,
-                        max: 169,
-                    },
-                ],
-                admin: {
-                    condition: (data, sibilingData) => {
-                        return sibilingData.type === "Weekly"
-                    },
-                },
+                description: "This is the minimum amount of time that someone can volunteer for",
+              },
             },
             {
-                name: "minTimeBlock",
-                label: "Minimum Time Block",
-                type: "number",
-                max: 168,
-                admin: {
+              name: "timezone",
+              type: "select",
+              required: true,
+              options: TIMEZONE_LIST,
+              admin: {
+                components: {
+                  Field: '/components/TimezoneSelector',
+                },
+                condition: (data) => {
+                  return data.schedule.type !== "Any Time"
+                },
+              },
+            },
+            {
+                name: "availability",
+                type: "json",
+                required: true,
+                validate: (value) => {
+                  if (value.length < 1) {
+                    return 'At least 1 time block is required.'
+                  } else {
+                    return true
+                  }
+                },
+                admin: { 
+                    components: {
+                        Field: '/components/AvailabilitySelector',
+                    },
                     condition: (data, sibilingData) => {
                         return sibilingData.type === "Weekly"
                     },
                 },
+                defaultValue: [],
+                hooks: {
+                }
             },
+            {
+              name: "dates",
+              type: "array",
+              admin: {
+                condition: (data) => {
+                  return data.schedule.type === "Specific Date(s)"
+                }
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: "start",
+                      type: "date",
+                      admin: {
+                        date: {
+                          pickerAppearance: "dayAndTime",
+                          timeIntervals: 15
+                        },
+                      },
+                      validate: (value, { siblingData }) => {
+                        if (siblingData.start >= siblingData.end) {
+                          return "Start time must be before end time."
+                        } else {
+                          return true
+                        }
+                      }
+                    },
+                    {
+                      name: "end",
+                      type: "date",
+                      admin: {
+                        date: {
+                          pickerAppearance: "dayAndTime",
+                          timeIntervals: 15
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            }
         ],
     },
     {
-        name: "description",
+        name: "role",
         type: "richText",
     },
     {
@@ -145,6 +228,14 @@ export const Listings: CollectionConfig = {
             "manual labor",
             "carpentry",
             "food service",
+            "communication",
+            "mental health services",
+            "writing",
+            "events",
+            "community engagement",
+            "cleaning",
+            "landscaping",
+            "spanish",
         ],
     },
     {
@@ -156,7 +247,11 @@ export const Listings: CollectionConfig = {
             "homelessness",
             "food security",
             "LGBTQ",
-            "consumer action",
+            "consumer rights",
+            "suicide prevention",
+            "arts",
+            "outdoors",
+            "parks",
         ],
     },
     // Rest of your fields

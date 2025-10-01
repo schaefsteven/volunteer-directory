@@ -1,0 +1,100 @@
+.error {
+  color: red;
+}
+
+.alert {
+  color: yellow;
+}
+
+.avsel_row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-top: 2px solid;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+
+}
+
+.avsel_row:first-of-type {
+  margin-top: 1rem;
+}
+
+.avsel_row label {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  text-transform: uppercase;
+}
+
+.avsel_add_button {
+  width: fit-content;
+  height: 50%;
+  font-size: 2rem;
+  margin: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.avsel_time_block {
+  background: white;
+  border-radius: .5rem;
+  border: 2px black;
+  color: black;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  height: min-content;
+  margin-right: 0.5rem;
+  padding: 0.5rem;
+}
+
+.avsel_modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90%, 500px);
+  max-height: 90vh;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0px;
+  z-index: 1000;
+
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  & > div {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    & > div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px;
+  }
+
+  main {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-top: 1px;
+  }
+}

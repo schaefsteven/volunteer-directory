@@ -68,6 +68,7 @@ export interface Config {
   collections: {
     users: User;
     listings: Listing;
+    organizations: Organization;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -76,6 +77,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     listings: ListingsSelect<false> | ListingsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -135,24 +137,381 @@ export interface User {
  */
 export interface Listing {
   id: string;
+  /**
+   * This shoud not be the name of the Organization. Instead, the title should be like a "job title" such as "Childcare Provider", "Software Engineer", or "Volunteer". If that doesn't fit, it should describe what you will do such as "Switch to a Climate-Friendly Bank", or "Cook Meals for Families in Need."
+   */
   title: string;
+  organization?: (string | null) | Organization;
   location: {
     type: ('In-person' | 'Hybrid' | 'Remote' | 'Lifestyle')[];
-    anywhere?: boolean | null;
-    zipCode?: number | null;
-  };
-  schedule?: {
-    type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
-    availability?:
+    coordinates?:
       | {
-          start?: number | null;
-          end?: number | null;
+          /**
+           * @minItems 2
+           * @maxItems 2
+           */
+          coordinate?: [number, number] | null;
           id?: string | null;
         }[]
       | null;
-    minTimeBlock?: number | null;
+    regions?:
+      | {
+          region?:
+            | {
+                [k: string]: unknown;
+              }
+            | unknown[]
+            | string
+            | number
+            | boolean
+            | null;
+          id?: string | null;
+        }[]
+      | null;
   };
-  description?: {
+  schedule?: {
+    type: 'Weekly' | 'Specific Date(s)' | 'Any Time';
+    /**
+     * This is the minimum amount of time that someone can volunteer for
+     */
+    minTimeBlock: number;
+    timezone?:
+      | (
+          | 'Pacific/Midway'
+          | 'Pacific/Pago_Pago'
+          | 'Pacific/Niue'
+          | 'Pacific/Rarotonga'
+          | 'America/Adak'
+          | 'Pacific/Honolulu'
+          | 'Pacific/Tahiti'
+          | 'Pacific/Marquesas'
+          | 'America/Anchorage'
+          | 'Pacific/Gambier'
+          | 'America/Los_Angeles'
+          | 'America/Tijuana'
+          | 'America/Vancouver'
+          | 'Pacific/Pitcairn'
+          | 'America/Hermosillo'
+          | 'America/Edmonton'
+          | 'America/Ciudad_Juarez'
+          | 'America/Denver'
+          | 'America/Phoenix'
+          | 'America/Whitehorse'
+          | 'America/Belize'
+          | 'America/Chicago'
+          | 'America/Guatemala'
+          | 'America/Managua'
+          | 'America/Mexico_City'
+          | 'America/Matamoros'
+          | 'America/Costa_Rica'
+          | 'America/El_Salvador'
+          | 'America/Regina'
+          | 'America/Tegucigalpa'
+          | 'America/Winnipeg'
+          | 'Pacific/Easter'
+          | 'Pacific/Galapagos'
+          | 'America/Rio_Branco'
+          | 'America/Bogota'
+          | 'America/Havana'
+          | 'America/Atikokan'
+          | 'America/Cancun'
+          | 'America/Cayman'
+          | 'America/Jamaica'
+          | 'America/Nassau'
+          | 'America/New_York'
+          | 'America/Panama'
+          | 'America/Port-au-Prince'
+          | 'America/Grand_Turk'
+          | 'America/Toronto'
+          | 'America/Guayaquil'
+          | 'America/Lima'
+          | 'America/Manaus'
+          | 'America/St_Kitts'
+          | 'America/Blanc-Sablon'
+          | 'America/Montserrat'
+          | 'America/Barbados'
+          | 'America/Port_of_Spain'
+          | 'America/Martinique'
+          | 'America/St_Lucia'
+          | 'America/St_Barthelemy'
+          | 'America/Halifax'
+          | 'Atlantic/Bermuda'
+          | 'America/St_Vincent'
+          | 'America/Kralendijk'
+          | 'America/Guadeloupe'
+          | 'America/Marigot'
+          | 'America/Aruba'
+          | 'America/Lower_Princes'
+          | 'America/Tortola'
+          | 'America/Dominica'
+          | 'America/St_Thomas'
+          | 'America/Grenada'
+          | 'America/Antigua'
+          | 'America/Puerto_Rico'
+          | 'America/Santo_Domingo'
+          | 'America/Anguilla'
+          | 'America/Thule'
+          | 'America/Curacao'
+          | 'America/La_Paz'
+          | 'America/Santiago'
+          | 'America/Guyana'
+          | 'America/Caracas'
+          | 'America/St_Johns'
+          | 'America/Argentina/Buenos_Aires'
+          | 'America/Sao_Paulo'
+          | 'Antarctica/Palmer'
+          | 'America/Punta_Arenas'
+          | 'Atlantic/Stanley'
+          | 'America/Cayenne'
+          | 'America/Asuncion'
+          | 'America/Miquelon'
+          | 'America/Paramaribo'
+          | 'America/Montevideo'
+          | 'America/Noronha'
+          | 'America/Nuuk'
+          | 'Atlantic/South_Georgia'
+          | 'Atlantic/Azores'
+          | 'Atlantic/Cape_Verde'
+          | 'Africa/Abidjan'
+          | 'Africa/Bamako'
+          | 'Africa/Bissau'
+          | 'Africa/Conakry'
+          | 'Africa/Dakar'
+          | 'America/Danmarkshavn'
+          | 'Europe/Isle_of_Man'
+          | 'Europe/Dublin'
+          | 'Africa/Freetown'
+          | 'Atlantic/St_Helena'
+          | 'Africa/Accra'
+          | 'Africa/Lome'
+          | 'Europe/London'
+          | 'Africa/Monrovia'
+          | 'Africa/Nouakchott'
+          | 'Africa/Ouagadougou'
+          | 'Atlantic/Reykjavik'
+          | 'Europe/Jersey'
+          | 'Europe/Guernsey'
+          | 'Africa/Banjul'
+          | 'Africa/Sao_Tome'
+          | 'Antarctica/Troll'
+          | 'Africa/Casablanca'
+          | 'Africa/El_Aaiun'
+          | 'Atlantic/Canary'
+          | 'Europe/Lisbon'
+          | 'Atlantic/Faroe'
+          | 'Africa/Windhoek'
+          | 'Africa/Algiers'
+          | 'Europe/Amsterdam'
+          | 'Europe/Andorra'
+          | 'Europe/Belgrade'
+          | 'Europe/Berlin'
+          | 'Europe/Bratislava'
+          | 'Europe/Brussels'
+          | 'Europe/Budapest'
+          | 'Europe/Copenhagen'
+          | 'Europe/Gibraltar'
+          | 'Europe/Ljubljana'
+          | 'Arctic/Longyearbyen'
+          | 'Europe/Luxembourg'
+          | 'Europe/Madrid'
+          | 'Europe/Monaco'
+          | 'Europe/Oslo'
+          | 'Europe/Paris'
+          | 'Europe/Podgorica'
+          | 'Europe/Prague'
+          | 'Europe/Rome'
+          | 'Europe/San_Marino'
+          | 'Europe/Malta'
+          | 'Europe/Sarajevo'
+          | 'Europe/Skopje'
+          | 'Europe/Stockholm'
+          | 'Europe/Tirane'
+          | 'Africa/Tunis'
+          | 'Europe/Vaduz'
+          | 'Europe/Vatican'
+          | 'Europe/Vienna'
+          | 'Europe/Warsaw'
+          | 'Europe/Zagreb'
+          | 'Europe/Zurich'
+          | 'Africa/Bangui'
+          | 'Africa/Malabo'
+          | 'Africa/Brazzaville'
+          | 'Africa/Porto-Novo'
+          | 'Africa/Douala'
+          | 'Africa/Kinshasa'
+          | 'Africa/Lagos'
+          | 'Africa/Libreville'
+          | 'Africa/Luanda'
+          | 'Africa/Ndjamena'
+          | 'Africa/Niamey'
+          | 'Africa/Bujumbura'
+          | 'Africa/Gaborone'
+          | 'Africa/Harare'
+          | 'Africa/Juba'
+          | 'Africa/Khartoum'
+          | 'Africa/Kigali'
+          | 'Africa/Blantyre'
+          | 'Africa/Lubumbashi'
+          | 'Africa/Lusaka'
+          | 'Africa/Maputo'
+          | 'Europe/Athens'
+          | 'Asia/Beirut'
+          | 'Europe/Bucharest'
+          | 'Africa/Cairo'
+          | 'Europe/Chisinau'
+          | 'Asia/Hebron'
+          | 'Europe/Helsinki'
+          | 'Europe/Kaliningrad'
+          | 'Europe/Kyiv'
+          | 'Europe/Mariehamn'
+          | 'Asia/Nicosia'
+          | 'Europe/Riga'
+          | 'Europe/Sofia'
+          | 'Europe/Tallinn'
+          | 'Africa/Tripoli'
+          | 'Europe/Vilnius'
+          | 'Asia/Jerusalem'
+          | 'Africa/Johannesburg'
+          | 'Africa/Mbabane'
+          | 'Africa/Maseru'
+          | 'Asia/Kuwait'
+          | 'Asia/Bahrain'
+          | 'Asia/Baghdad'
+          | 'Asia/Qatar'
+          | 'Asia/Riyadh'
+          | 'Asia/Aden'
+          | 'Asia/Amman'
+          | 'Asia/Damascus'
+          | 'Africa/Addis_Ababa'
+          | 'Indian/Antananarivo'
+          | 'Africa/Asmara'
+          | 'Africa/Dar_es_Salaam'
+          | 'Africa/Djibouti'
+          | 'Africa/Kampala'
+          | 'Indian/Mayotte'
+          | 'Africa/Mogadishu'
+          | 'Indian/Comoro'
+          | 'Africa/Nairobi'
+          | 'Europe/Minsk'
+          | 'Europe/Moscow'
+          | 'Europe/Simferopol'
+          | 'Antarctica/Syowa'
+          | 'Europe/Istanbul'
+          | 'Asia/Tehran'
+          | 'Asia/Yerevan'
+          | 'Asia/Baku'
+          | 'Asia/Tbilisi'
+          | 'Asia/Dubai'
+          | 'Asia/Muscat'
+          | 'Indian/Mauritius'
+          | 'Indian/Reunion'
+          | 'Europe/Samara'
+          | 'Indian/Mahe'
+          | 'Asia/Kabul'
+          | 'Indian/Kerguelen'
+          | 'Asia/Almaty'
+          | 'Indian/Maldives'
+          | 'Antarctica/Mawson'
+          | 'Asia/Karachi'
+          | 'Asia/Dushanbe'
+          | 'Asia/Ashgabat'
+          | 'Asia/Tashkent'
+          | 'Asia/Yekaterinburg'
+          | 'Asia/Colombo'
+          | 'Asia/Kolkata'
+          | 'Asia/Kathmandu'
+          | 'Asia/Dhaka'
+          | 'Asia/Thimphu'
+          | 'Asia/Urumqi'
+          | 'Indian/Chagos'
+          | 'Asia/Bishkek'
+          | 'Asia/Omsk'
+          | 'Indian/Cocos'
+          | 'Asia/Yangon'
+          | 'Indian/Christmas'
+          | 'Antarctica/Davis'
+          | 'Asia/Hovd'
+          | 'Asia/Bangkok'
+          | 'Asia/Ho_Chi_Minh'
+          | 'Asia/Phnom_Penh'
+          | 'Asia/Vientiane'
+          | 'Asia/Novosibirsk'
+          | 'Asia/Jakarta'
+          | 'Antarctica/Casey'
+          | 'Australia/Perth'
+          | 'Asia/Brunei'
+          | 'Asia/Makassar'
+          | 'Asia/Macau'
+          | 'Asia/Shanghai'
+          | 'Asia/Hong_Kong'
+          | 'Asia/Irkutsk'
+          | 'Asia/Kuala_Lumpur'
+          | 'Asia/Manila'
+          | 'Asia/Singapore'
+          | 'Asia/Taipei'
+          | 'Asia/Ulaanbaatar'
+          | 'Australia/Eucla'
+          | 'Asia/Jayapura'
+          | 'Asia/Tokyo'
+          | 'Asia/Pyongyang'
+          | 'Asia/Seoul'
+          | 'Pacific/Palau'
+          | 'Asia/Dili'
+          | 'Asia/Chita'
+          | 'Australia/Adelaide'
+          | 'Australia/Darwin'
+          | 'Australia/Brisbane'
+          | 'Australia/Sydney'
+          | 'Pacific/Guam'
+          | 'Pacific/Saipan'
+          | 'Pacific/Chuuk'
+          | 'Antarctica/DumontDUrville'
+          | 'Pacific/Port_Moresby'
+          | 'Asia/Vladivostok'
+          | 'Australia/Lord_Howe'
+          | 'Pacific/Bougainville'
+          | 'Pacific/Kosrae'
+          | 'Pacific/Noumea'
+          | 'Pacific/Norfolk'
+          | 'Asia/Sakhalin'
+          | 'Pacific/Guadalcanal'
+          | 'Pacific/Efate'
+          | 'Pacific/Fiji'
+          | 'Pacific/Tarawa'
+          | 'Asia/Kamchatka'
+          | 'Pacific/Majuro'
+          | 'Pacific/Nauru'
+          | 'Pacific/Auckland'
+          | 'Antarctica/McMurdo'
+          | 'Pacific/Funafuti'
+          | 'Pacific/Wake'
+          | 'Pacific/Wallis'
+          | 'Pacific/Chatham'
+          | 'Pacific/Kanton'
+          | 'Pacific/Apia'
+          | 'Pacific/Fakaofo'
+          | 'Pacific/Tongatapu'
+          | 'Pacific/Kiritimati'
+        )
+      | null;
+    availability?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    dates?:
+      | {
+          start?: string | null;
+          end?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  role?: {
     root: {
       type: string;
       children: {
@@ -182,10 +541,64 @@ export interface Listing {
     };
     [k: string]: unknown;
   } | null;
-  skills?: ('software developer' | 'manual labor' | 'carpentry' | 'food service')[] | null;
-  tags?: ('environment' | 'homelessness' | 'food security' | 'LGBTQ' | 'consumer action')[] | null;
+  skills?:
+    | (
+        | 'software developer'
+        | 'manual labor'
+        | 'carpentry'
+        | 'food service'
+        | 'communication'
+        | 'mental health services'
+        | 'writing'
+        | 'events'
+        | 'community engagement'
+        | 'cleaning'
+        | 'landscaping'
+        | 'spanish'
+      )[]
+    | null;
+  tags?:
+    | (
+        | 'environment'
+        | 'homelessness'
+        | 'food security'
+        | 'LGBTQ'
+        | 'consumer rights'
+        | 'suicide prevention'
+        | 'arts'
+        | 'outdoors'
+        | 'parks'
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: string;
+  name: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -201,6 +614,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'listings';
         value: string | Listing;
+      } | null)
+    | ({
+        relationTo: 'organizations';
+        value: string | Organization;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -265,32 +682,57 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface ListingsSelect<T extends boolean = true> {
   title?: T;
+  organization?: T;
   location?:
     | T
     | {
         type?: T;
-        anywhere?: T;
-        zipCode?: T;
+        coordinates?:
+          | T
+          | {
+              coordinate?: T;
+              id?: T;
+            };
+        regions?:
+          | T
+          | {
+              region?: T;
+              id?: T;
+            };
       };
   schedule?:
     | T
     | {
         type?: T;
-        availability?:
+        minTimeBlock?: T;
+        timezone?: T;
+        availability?: T;
+        dates?:
           | T
           | {
               start?: T;
               end?: T;
               id?: T;
             };
-        minTimeBlock?: T;
       };
-  description?: T;
+  role?: T;
   firstStep?: T;
   skills?: T;
   tags?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
