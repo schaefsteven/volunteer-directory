@@ -1,97 +1,136 @@
-// components/OpportunityCard.tsx
+// src/components/OpportunityCard.tsx
 import Link from "next/link";
-
-interface Opportunity {
-  id: string;
-  title: string;
-  organization: string;
-  description: string;
-  isRemote: boolean;
-  commitment: {
-    hoursPerWeek: number;
-    isFlexible: boolean;
-    isRecurring: boolean;
-  };
-  categories: string[];
-  location: {
-    city: string;
-    state: string;
-  };
-}
+import { Listing } from "@/payload-types";
 
 interface OpportunityCardProps {
-  opportunity: Opportunity;
+  opportunity: Listing;
 }
 
 export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
-  // components/OpportunityCard.tsx
-  // Update the return section
+  // Extract organization name (handle relationship)
+  const organizationName =
+    typeof opportunity.organization === "object" && opportunity.organization
+      ? opportunity.organization.name
+      : "Organization";
+
+  // Format location types
+  const locationTypes = opportunity.location?.type || [];
+  const isRemote = locationTypes.includes("Remote");
+  const isInPerson =
+    locationTypes.includes("In-person") || locationTypes.includes("Hybrid");
+
+  // Get location display text
+  const getLocationDisplay = () => {
+    if (locationTypes.length === 0) return "Location not specified";
+    if (isRemote && !isInPerson) return "Remote";
+    if (!isRemote && isInPerson) return "In-Person";
+    if (isRemote && isInPerson) return "Hybrid";
+    if (locationTypes.includes("Lifestyle")) return "Lifestyle";
+    return locationTypes.join(", ");
+  };
+
+  // Format schedule display
+  const getScheduleDisplay = () => {
+    if (!opportunity.schedule) return "Schedule flexible";
+
+    const { type, minTimeBlock } = opportunity.schedule;
+
+    if (type === "Any Time") {
+      return `Flexible (min ${minTimeBlock} hours)`;
+    } else if (type === "Weekly") {
+      return `Weekly commitment (min ${minTimeBlock} hours)`;
+    } else if (type === "Specific Date(s)") {
+      return `Scheduled dates (min ${minTimeBlock} hours)`;
+    }
+
+    return "Schedule available";
+  };
+
+  // Get tags/categories for display
+  const displayTags = opportunity.tags?.slice(0, 3) || [];
+  const hasMoreTags = (opportunity.tags?.length || 0) > 3;
 
   return (
     <Link href={`/opportunities/${opportunity.id}`}>
-      <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden">
-        <div className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start">
-            <div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
-                {opportunity.title}
-              </h3>
-              <p className="text-gray-600">{opportunity.organization}</p>
-            </div>
-            <div className="flex flex-wrap mt-2 sm:mt-0 gap-2">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  opportunity.isRemote
-                    ? "bg-green-100 text-green-800"
-                    : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {opportunity.isRemote ? "Remote" : "In-Person"}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                {opportunity.commitment.hoursPerWeek} hrs/week
-              </span>
-            </div>
+      <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 p-6 cursor-pointer border border-gray-200 hover:border-blue-300">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+              {opportunity.title}
+            </h3>
+            <p className="text-sm text-gray-600">{organizationName}</p>
           </div>
 
-          <div className="mt-4">
-            <p className="text-gray-700 line-clamp-3">
-              {opportunity.description}
+          {/* Location badge */}
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              isRemote
+                ? "bg-green-100 text-green-800"
+                : "bg-blue-100 text-blue-800"
+            }`}
+          >
+            {getLocationDisplay()}
+          </span>
+        </div>
+
+        {/* Schedule info */}
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Schedule:</span>{" "}
+            {getScheduleDisplay()}
+          </p>
+        </div>
+
+        {/* Role description preview */}
+        {opportunity.role && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-700 line-clamp-2">
+              {/* Extract plain text from rich text field */}
+              {typeof opportunity.role === "string"
+                ? opportunity.role
+                : "View details for full description"}
             </p>
           </div>
+        )}
 
-          <div className="mt-4 flex items-center text-sm text-gray-500">
-            <svg
-              className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>
-              {opportunity.location.city}, {opportunity.location.state}
-            </span>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {opportunity.categories.slice(0, 3).map((category) => (
+        {/* Tags/Categories */}
+        {displayTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {displayTags.map((tag) => (
               <span
-                key={category}
-                className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded"
+                key={tag}
+                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
               >
-                {category}
+                {tag}
               </span>
             ))}
-            {opportunity.categories.length > 3 && (
-              <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
-                +{opportunity.categories.length - 3} more
+            {hasMoreTags && (
+              <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded">
+                +{(opportunity.tags?.length || 0) - 3} more
               </span>
             )}
           </div>
+        )}
+
+        {/* Skills */}
+        {opportunity.skills && opportunity.skills.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs text-gray-500">
+              <span className="font-medium">Skills:</span>{" "}
+              {opportunity.skills.slice(0, 3).join(", ")}
+              {opportunity.skills.length > 3 && "..."}
+            </p>
+          </div>
+        )}
+
+        {/* View details link */}
+        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+          <span className="text-sm text-blue-600 font-medium hover:text-blue-800">
+            View Details →
+          </span>
+          <span className="text-xs text-gray-400">
+            Updated {new Date(opportunity.updatedAt).toLocaleDateString()}
+          </span>
         </div>
       </div>
     </Link>
